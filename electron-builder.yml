@@ -1,0 +1,29 @@
+appId: com.cadence.app
+productName: Cadence
+icon: resources/icon.png
+asar: true
+
+directories:
+  output: dist
+  buildResources: resources
+
+files:
+  - out/**/*
+  - "!out/**/*.map"
+  - "!docs/**/*"
+  - "!example/**/*"
+
+mac:
+  target: [dmg, zip]
+  category: public.app-category.productivity
+
+win:
+  target: [nsis, portable]
+
+linux:
+  target: [AppImage, deb]
+  category: Office
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

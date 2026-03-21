@@ -1,0 +1,62 @@
+export const IPC = {
+  // Topics
+  TOPICS_LIST:          'topics:list',
+  TOPICS_GET:           'topics:get',
+  TOPICS_CREATE:        'topics:create',
+  TOPICS_UPDATE:        'topics:update',
+  TOPICS_DELETE:        'topics:delete',
+  TOPICS_BULK_UPDATE:   'topics:bulk-update',
+  TOPICS_BULK_DELETE:   'topics:bulk-delete',
+  TOPICS_REORDER:       'topics:reorder',
+  TOPICS_ADD_NOTE:      'topics:add-note',
+  TOPICS_UPDATE_NOTE:   'topics:update-note',
+  TOPICS_DUPLICATE:     'topics:duplicate',
+
+  // Attachments
+  ATTACHMENTS_SAVE:     'attachments:save',
+
+  // Contexts
+  CONTEXTS_LIST:        'contexts:list',
+  CONTEXTS_CREATE:      'contexts:create',
+  CONTEXTS_UPDATE:      'contexts:update',
+  CONTEXTS_DELETE:      'contexts:delete',
+  GROUPS_LIST:          'groups:list',
+  GROUPS_CREATE:        'groups:create',
+  GROUPS_UPDATE:        'groups:update',
+  GROUPS_DELETE:        'groups:delete',
+  GROUPS_REORDER:       'groups:reorder',
+  CONTEXTS_MOVE_TO_GROUP: 'contexts:move-to-group',
+  CONTEXTS_REORDER:     'contexts:reorder',
+  SYSTEM_COUNTS:        'system:counts',
+
+  // Views
+  VIEWS_LIST:           'views:list',
+  VIEWS_CREATE:         'views:create',
+  VIEWS_UPDATE:         'views:update',
+  VIEWS_DELETE:         'views:delete',
+
+  // Search
+  SEARCH_GLOBAL:        'search:global',
+
+  // Agenda
+  AGENDA_GENERATE:      'agenda:generate',
+
+  // Undo
+  UNDO_LAST:            'undo:last',
+
+  // System
+  SETTINGS_GET:         'settings:get',
+  SETTINGS_UPDATE:      'settings:update',
+  CONFLICT_CHECK:       'conflict:check',
+  SHOW_IN_FOLDER:       'system:show-in-folder',
+  INDEX_REBUILD:        'index:rebuild',
+  HEALTH_CHECK:         'system:health-check',
+
+  // Capture
+  CAPTURE_SHOW:         'capture:show',
+
+  // Events (Main → Renderer)
+  FILE_CHANGED:         'event:file-changed',
+  CONFLICT_DETECTED:    'event:conflict-detected',
+  ERROR_OCCURRED:       'event:error',
+} as const;

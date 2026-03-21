@@ -1,0 +1,187 @@
+// --- Language ---
+
+export type Language = 'de' | 'en';
+
+// --- Enums (Union Types) ---
+
+export type TopicStatus = 'neu' | 'follow-up' | 'erledigt';
+export type TopicPriority = 'hoch' | 'mittel' | 'normal';
+export type TopicDirection = 'ansprechen' | 'liefern' | 'warten';
+export type ContextType = 'person' | 'meeting' | 'group' | 'place' | 'other';
+export type RecurringInterval = 'weekly' | 'biweekly' | 'monthly' | 'quarterly';
+
+// --- Topic ---
+
+export interface Topic {
+  id: string;
+  title: string;
+  status: TopicStatus;
+  priority: TopicPriority;
+  direction: TopicDirection;
+  contexts: string[];
+  dueDate: string | null;
+  followUpDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  sortOrder: number | null;
+  recurring: boolean;
+  recurringInterval: RecurringInterval | null;
+  recurringNext: string | null;
+  bodyPreview: string | null;
+  filePath: string;
+}
+
+export interface TopicDetail extends Topic {
+  notes: NoteEntry[];
+  /** Raw frontmatter data preserved for Obsidian coexistence. Runtime-only, not stored in DB. */
+  _rawFrontmatter?: Record<string, unknown>;
+}
+
+export interface NoteEntry {
+  date: string;
+  content: string;
+}
+
+export interface CreateTopicInput {
+  title: string;
+  contexts?: string[];
+  priority?: TopicPriority;
+  direction?: TopicDirection;
+  dueDate?: string;
+}
+
+export interface UpdateTopicInput {
+  title?: string;
+  status?: TopicStatus;
+  priority?: TopicPriority;
+  direction?: TopicDirection;
+  contexts?: string[];
+  dueDate?: string | null;
+  followUpDate?: string | null;
+  sortOrder?: number;
+  recurring?: boolean;
+  recurringInterval?: RecurringInterval | null;
+}
+
+export interface DuplicateTopicInput {
+  sourceId: string;
+  targetContexts: string[];
+}
+
+// --- Context ---
+
+export interface Context {
+  id: string;
+  name: string;
+  type: ContextType;
+  group: string | null;
+  topicCount?: number;
+}
+
+export interface ContextGroup {
+  id: string;
+  name: string;
+  sortOrder: number;
+  contexts: Context[];
+}
+
+export interface CreateContextInput {
+  name: string;
+  type: ContextType;
+  group?: string;
+}
+
+export interface UpdateContextInput {
+  name?: string;
+  type?: ContextType;
+  group?: string | null;
+}
+
+// --- Filter ---
+
+export interface TopicFilter {
+  contexts?: string[];
+  status?: TopicStatus[];
+  priority?: TopicPriority[];
+  direction?: TopicDirection[];
+  overdue?: boolean;
+  dueBefore?: string;
+  dueAfter?: string;
+  search?: string;
+  inbox?: boolean;
+  groupBy?: 'context' | 'priority' | 'direction' | 'status' | 'none';
+  sortBy?: 'priority' | 'due_date' | 'created_at' | 'updated_at';
+}
+
+// --- Saved View ---
+
+export interface SavedView {
+  id: string;
+  name: string;
+  icon?: string;
+  filter: TopicFilter;
+}
+
+export interface CreateViewInput {
+  name: string;
+  icon?: string;
+  filter: TopicFilter;
+}
+
+export interface UpdateViewInput {
+  name?: string;
+  icon?: string;
+  filter?: TopicFilter;
+}
+
+// --- Settings ---
+
+export interface Settings {
+  dataDir: string;
+  globalHotkey: string;
+  defaultPriority: TopicPriority;
+  confirmDelete: boolean;
+  confirmComplete: boolean;
+  warnWaitingDays: number;
+  warnWaitingCritical: number;
+  obsidianMode: boolean;
+  language: Language;
+}
+
+// --- Undo ---
+
+export interface UndoAction {
+  type: 'update' | 'delete' | 'create';
+  topicId: string;
+  description: string;
+  previousFileContent: string;
+  previousFilePath: string;
+}
+
+// --- Search ---
+
+export type SearchResultType = 'topic' | 'context';
+
+export interface SearchResult {
+  type: SearchResultType;
+  id: string;
+  title: string;
+  snippet: string | null;
+  contexts: Array<{ id: string; name: string }>;
+  contextType: ContextType | null;
+  status: TopicStatus | null;
+  priority: TopicPriority | null;
+}
+
+// --- Error ---
+
+export type AppErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
+
+export interface AppError {
+  severity: AppErrorSeverity;
+  message: string;
+  detail?: string;
+  filePath?: string;
+  autoDismiss?: boolean;
+}

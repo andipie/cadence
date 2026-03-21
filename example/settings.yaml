@@ -1,0 +1,8 @@
+global_hotkey: CommandOrControl+Shift+C
+default_priority: normal
+confirm_delete: true
+confirm_complete: false
+warn_waiting_days: 7
+warn_waiting_critical: 14
+obsidian_mode: false
+language: en

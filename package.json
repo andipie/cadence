@@ -1,0 +1,57 @@
+{
+  "name": "cadence",
+  "version": "0.1.0",
+  "description": "A personal topic and task tracker organized by project contexts",
+  "author": "Claude",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andipie/Cadence.git"
+  },
+  "homepage": "https://github.com/andipie/Cadence",
+  "bugs": {
+    "url": "https://github.com/andipie/Cadence/issues"
+  },
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:win": "electron-vite build && electron-builder --win",
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "build:all": "electron-vite build && electron-builder --mac --win --linux",
+    "preview": "electron-vite preview",
+    "rebuild": "node node_modules/@electron/rebuild/lib/cli.js -f -w better-sqlite3",
+    "postinstall": "node node_modules/@electron/rebuild/lib/cli.js -f -w better-sqlite3 && node scripts/postinstall.js"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "better-sqlite3": "^11.0.0",
+    "chokidar": "^3.6.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.1",
+    "react-markdown": "^10.1.0",
+    "yaml": "^2.4.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.3",
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,24 @@
+groups:
+  - id: development
+    name: Development
+    sort_order: 0
+  - id: organization
+    name: Organization
+    sort_order: 1
+contexts:
+  - id: website-redesign
+    name: Website Redesign
+    type: meeting
+    group: development
+  - id: api-projekt
+    name: API Project
+    type: meeting
+    group: development
+  - id: team-offsite
+    name: Team Offsite
+    type: meeting
+    group: organization
+  - id: produktlaunch
+    name: Product Launch
+    type: meeting
+    group: organization

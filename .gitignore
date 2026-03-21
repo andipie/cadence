@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+
+# SQLite (disposable index cache)
+*.db
+*.db-journal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment & logs
+.env
+.env.*
+*.log
+
+# Backups
+*.bak
+
+# TypeScript build info
+tsconfig.*.tsbuildinfo
