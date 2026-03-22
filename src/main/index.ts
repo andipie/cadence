@@ -9,8 +9,9 @@ import {
   DEFAULT_WINDOW_HEIGHT,
   DEFAULT_CAPTURE_HOTKEY
 } from '../shared/constants';
-import { registerIpcHandlers, cleanup } from './ipc';
-import { getDefaultDataDir } from './store/file-store';
+import { registerPhase1Handlers, initializeDataLayer, cleanup } from './ipc';
+import { checkStartupState } from './services/startup-service';
+import { getCurrentDataDir, setCurrentDataDir } from './ipc/startup';
 import { showCaptureWindow, destroyCaptureWindow, updateCaptureWindowDarkMode } from './quick-capture-window';
 import { registerGlobalHotkey, unregisterGlobalHotkey } from './global-hotkey';
 
@@ -76,9 +77,14 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  // Register custom protocol for serving attachment images
-  const dataDir = getDefaultDataDir();
+  // Register custom protocol for serving attachment images.
+  // Uses a mutable reference to dataDir — not available until Phase 2.
   protocol.handle('cadence-file', (request) => {
+    const dataDir = getCurrentDataDir();
+    if (!dataDir) {
+      return new Response('Not initialized', { status: 503 });
+    }
+
     const url = new URL(request.url);
     const urlPath = decodeURIComponent(url.pathname);
     const resolved = path.resolve(dataDir, urlPath.replace(/^\//, ''));
@@ -103,8 +109,15 @@ app.whenReady().then(() => {
 
   const win = createWindow();
 
-  // Initialize data layer and IPC handlers after window is created
-  registerIpcHandlers(win);
+  // Phase 1: Register startup IPC handlers (always — no data dir needed)
+  registerPhase1Handlers(win);
+
+  // Check startup state — if ready, immediately run Phase 2
+  const state = checkStartupState();
+  if (state.state === 'ready') {
+    setCurrentDataDir(state.dataDir);
+    initializeDataLayer(win, state.dataDir);
+  }
 
   // Register global hotkey for quick capture
   registerGlobalHotkey(DEFAULT_CAPTURE_HOTKEY, showCaptureWindow);
@@ -112,7 +125,12 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       const newWin = createWindow();
-      registerIpcHandlers(newWin);
+      registerPhase1Handlers(newWin);
+      // Re-initialize data layer if we have a valid dir
+      const dataDir = getCurrentDataDir();
+      if (dataDir) {
+        initializeDataLayer(newWin, dataDir);
+      }
     }
   });
 });

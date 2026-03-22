@@ -149,6 +149,12 @@ export interface Settings {
   language: Language;
 }
 
+// --- Switch Directory ---
+
+export type SwitchDirResult =
+  | { success: true; settings: Settings }
+  | { success: false; error: string; needsSetup?: boolean };
+
 // --- Undo ---
 
 export interface UndoAction {
@@ -173,6 +179,18 @@ export interface SearchResult {
   status: TopicStatus | null;
   priority: TopicPriority | null;
 }
+
+// --- Startup ---
+
+export type StartupState =
+  | { state: 'ready'; dataDir: string }
+  | { state: 'no-dir' }
+  | { state: 'unreachable'; path: string }
+  | { state: 'invalid'; path: string; reason: string };
+
+export type SetupDirResult =
+  | { success: true; dataDir: string }
+  | { success: false; error: string };
 
 // --- Error ---
 

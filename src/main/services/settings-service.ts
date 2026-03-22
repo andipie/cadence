@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import YAML from 'yaml';
 import type { Language, Settings } from '../../shared/types';
 
+const DATA_DIR_POINTER = '.cadence-data-dir';
 const SETTINGS_FILENAME = 'settings.yaml';
 const SETTINGS_BACKUP = 'settings.yaml.bak';
 const RETRY_DELAYS = [100, 500, 2000];
@@ -131,4 +133,21 @@ export function writeSettings(dataDir: string, settings: Settings): void {
       }
     }
   }
+}
+
+/**
+ * Returns the path to the data-dir pointer file.
+ * Stored in the user's home directory as a hidden file.
+ */
+export function getDataDirPointerPath(): string {
+  return path.join(os.homedir(), DATA_DIR_POINTER);
+}
+
+/**
+ * Writes a custom data directory path to the pointer file.
+ * On next launch, getDefaultDataDir() will read this file.
+ */
+export function writeDataDirPointer(dataDir: string): void {
+  const pointerPath = getDataDirPointerPath();
+  fs.writeFileSync(pointerPath, dataDir, 'utf-8');
 }

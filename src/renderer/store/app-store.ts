@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Context, ContextGroup, Topic, TopicDetail, CreateContextInput, UpdateContextInput, UpdateTopicInput, TopicFilter, AppErrorSeverity, SavedView, UpdateViewInput, Settings } from '@shared/types';
+import type { Context, ContextGroup, Topic, TopicDetail, CreateContextInput, UpdateContextInput, UpdateTopicInput, TopicFilter, AppErrorSeverity, SavedView, UpdateViewInput, Settings, StartupState } from '@shared/types';
 import { getTranslations } from '@shared/locales';
 import type { Translations } from '@shared/locales/types';
 
@@ -12,6 +12,12 @@ function toastDescription(data: UpdateTopicInput, t: Translations): string | nul
 }
 
 interface AppState {
+  // Startup
+  appReady: boolean;
+  startupState: StartupState | null;
+  loadStartupState: () => Promise<void>;
+  completeStartup: () => void;
+
   // Navigation
   activeView: 'context' | 'inbox' | 'overdue' | 'liefern' | 'free-view' | 'saved-view';
   activeContextId: string | null;
@@ -153,9 +159,40 @@ interface AppState {
   updateSettings: (data: Partial<Settings>) => Promise<void>;
   openSettings: () => void;
   closeSettings: () => void;
+
+  // Data directory switching
+  switchDataDir: () => Promise<void>;
+  setupAndSwitchDir: (dirPath: string) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
+  // Startup
+  appReady: false,
+  startupState: null,
+  loadStartupState: async () => {
+    try {
+      const state = await window.api.startup.getState();
+      if (state.state === 'ready') {
+        set({ startupState: state, appReady: true });
+        // Trigger normal app initialization
+        get().loadSettings();
+        get().loadGroups();
+        get().loadSystemCounts();
+      } else {
+        set({ startupState: state });
+      }
+    } catch {
+      set({ startupState: { state: 'no-dir' } });
+    }
+  },
+  completeStartup: () => {
+    set({ appReady: true });
+    // Trigger normal app initialization
+    get().loadSettings();
+    get().loadGroups();
+    get().loadSystemCounts();
+  },
+
   // Navigation state
   activeView: 'context',
   activeContextId: null,
@@ -780,6 +817,112 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),
+
+  // Data directory switching
+  switchDataDir: async () => {
+    const t = getTranslations(get().settings?.language ?? 'de');
+    const result = await window.api.settings.switchDir();
+
+    if (!result.success) {
+      if (result.error === 'canceled') return;
+
+      if (result.needsSetup) {
+        // Ask user if they want to set up the directory
+        get().showToast(t.settings.dataDirSetupConfirm, { severity: 'warning' });
+        return;
+      }
+
+      if (result.error === 'not-accessible') {
+        get().showToast(t.settings.dataDirNotAccessible, { severity: 'error' });
+      } else {
+        get().showToast(t.settings.dataDirSwitchError, { severity: 'error' });
+      }
+      return;
+    }
+
+    // Reset all UI state
+    set({
+      activeContextId: null,
+      selectedTopicId: null,
+      selectedTopic: null,
+      selectedTopicLoading: false,
+      topics: [],
+      topicsLoading: false,
+      contexts: [],
+      groups: [],
+      ungroupedContexts: [],
+      settings: result.settings,
+      savedViews: [],
+      activeSavedViewId: null,
+      multiSelectMode: false,
+      selectedTopicIds: [],
+      conflictFiles: [],
+      conflictDismissed: false,
+      activeView: 'context',
+      settingsOpen: false,
+      freeViewFilter: {},
+    });
+
+    // Reload data from new directory
+    get().loadGroups();
+    get().loadSystemCounts();
+    get().loadSavedViews();
+    get().recheckConflicts();
+
+    const tNew = getTranslations(result.settings.language ?? 'de');
+    get().showToast(tNew.settings.dataDirSwitched);
+  },
+
+  setupAndSwitchDir: async (dirPath: string) => {
+    const t = getTranslations(get().settings?.language ?? 'de');
+    const result = await window.api.startup.setupDir(dirPath, false);
+
+    if (!result.success) {
+      if (result.error === 'not-empty') {
+        // Try with force
+        const forceResult = await window.api.startup.setupDir(dirPath, true);
+        if (!forceResult.success) {
+          get().showToast(t.settings.dataDirSwitchError, { severity: 'error' });
+          return;
+        }
+      } else {
+        get().showToast(t.settings.dataDirSwitchError, { severity: 'error' });
+        return;
+      }
+    }
+
+    // Reset all UI state and reload
+    const newSettings = await window.api.settings.get();
+    set({
+      activeContextId: null,
+      selectedTopicId: null,
+      selectedTopic: null,
+      selectedTopicLoading: false,
+      topics: [],
+      topicsLoading: false,
+      contexts: [],
+      groups: [],
+      ungroupedContexts: [],
+      settings: newSettings,
+      savedViews: [],
+      activeSavedViewId: null,
+      multiSelectMode: false,
+      selectedTopicIds: [],
+      conflictFiles: [],
+      conflictDismissed: false,
+      activeView: 'context',
+      settingsOpen: false,
+      freeViewFilter: {},
+    });
+
+    get().loadGroups();
+    get().loadSystemCounts();
+    get().loadSavedViews();
+    get().recheckConflicts();
+
+    const tNew = getTranslations(newSettings.language ?? 'de');
+    get().showToast(tNew.settings.dataDirSwitched);
+  },
 
   loadTopics: async () => {
     const { activeView, activeContextId } = get();

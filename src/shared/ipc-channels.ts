@@ -47,10 +47,17 @@ export const IPC = {
   // System
   SETTINGS_GET:         'settings:get',
   SETTINGS_UPDATE:      'settings:update',
+  SETTINGS_SWITCH_DIR:  'settings:switch-dir',
   CONFLICT_CHECK:       'conflict:check',
   SHOW_IN_FOLDER:       'system:show-in-folder',
   INDEX_REBUILD:        'index:rebuild',
   HEALTH_CHECK:         'system:health-check',
+
+  // Startup
+  STARTUP_GET_STATE:    'startup:get-state',
+  STARTUP_PICK_FOLDER:  'startup:pick-folder',
+  STARTUP_SETUP_DIR:    'startup:setup-dir',
+  STARTUP_OPEN_DIR:     'startup:open-dir',
 
   // Capture
   CAPTURE_SHOW:         'capture:show',

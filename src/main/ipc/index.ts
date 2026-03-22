@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { ipcMain, shell } from 'electron';
-import { ensureDataDirectories, getDefaultDataDir } from '../store/file-store';
+import { shell } from 'electron';
+import { ensureDataDirectories } from '../store/file-store';
 import { initDatabase, rebuildIndex } from '../store/index-db';
 import { startWatcher } from '../store/file-watcher';
 import type chokidar from 'chokidar';
@@ -12,6 +12,8 @@ import { registerAgendaHandlers } from './agenda';
 import { registerSearchHandlers } from './search';
 import { registerAttachmentHandlers } from './attachments';
 import { registerSettingsHandlers } from './settings';
+import { registerStartupHandlers } from './startup';
+import { safeHandle } from './utils';
 import { scanConflictFiles } from '../services/conflict-service';
 import { IPC } from '../../shared/ipc-channels';
 import type { BrowserWindow } from 'electron';
@@ -20,33 +22,39 @@ import type { AppError } from '../../shared/types';
 
 let db: Database.Database | null = null;
 let watcher: chokidar.FSWatcher | null = null;
-let isRegistered = false;
+let isDataLayerInitialized = false;
 
 // Startup issues collected during initialization
 let startupIssues: AppError[] = [];
 
-/** Safe handler registration — removes existing handler first to survive HMR restarts. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function safeHandle(channel: string, handler: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => any): void {
-  ipcMain.removeHandler(channel);
-  ipcMain.handle(channel, handler);
+/**
+ * Phase 1: Registers only startup IPC handlers.
+ * Called immediately at app start — does not require a data directory.
+ */
+export function registerPhase1Handlers(mainWindow: BrowserWindow): void {
+  registerStartupHandlers(mainWindow, initializeDataLayer);
+
+  // Health check handler — returns startup issues to the renderer
+  safeHandle(IPC.HEALTH_CHECK, () => {
+    return startupIssues;
+  });
 }
 
 /**
- * Initializes the data layer and registers all IPC handlers.
- * Called once during app startup, after the main window is created.
- * Guard prevents double-registration on macOS activate event.
+ * Phase 2: Initializes the data layer and registers all domain IPC handlers.
+ * Called after a valid data directory is known — either immediately on startup
+ * (if pointer file is valid) or after user selects a directory on the welcome screen.
+ * Guard prevents double-initialization.
  */
-export function registerIpcHandlers(mainWindow: BrowserWindow): void {
-  if (isRegistered) {
+export function initializeDataLayer(mainWindow: BrowserWindow, dataDir: string): void {
+  if (isDataLayerInitialized) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('[Cadence] IPC handlers already registered, skipping');
+      console.log('[Cadence] Data layer already initialized, skipping');
     }
     return;
   }
 
   startupIssues = [];
-  const dataDir = getDefaultDataDir();
   const topicsDir = path.join(dataDir, 'topics');
   const dbPath = path.join(dataDir, 'cadence-index.db');
 
@@ -86,14 +94,14 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   // Start file watcher
   watcher = startWatcher(topicsDir, db, mainWindow);
 
-  // Register IPC handlers
+  // Register domain IPC handlers
   registerTopicHandlers(db, dataDir);
   registerContextHandlers(db, dataDir, mainWindow);
   registerViewHandlers(dataDir);
   registerAgendaHandlers(db, dataDir);
   registerSearchHandlers(db, dataDir);
   registerAttachmentHandlers(dataDir);
-  registerSettingsHandlers(dataDir);
+  registerSettingsHandlers(dataDir, switchDataLayer);
 
   // Conflict check handler — scans for sync conflict files
   safeHandle(IPC.CONFLICT_CHECK, () => {
@@ -121,12 +129,16 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     });
   }
 
-  // Health check handler — returns startup issues to the renderer
-  safeHandle(IPC.HEALTH_CHECK, () => {
-    return startupIssues;
-  });
+  isDataLayerInitialized = true;
+}
 
-  isRegistered = true;
+/**
+ * Switches to a different data directory at runtime.
+ * Tears down the current data layer (watcher, DB) and re-initializes on the new directory.
+ */
+export function switchDataLayer(mainWindow: BrowserWindow, newDataDir: string): void {
+  cleanup();
+  initializeDataLayer(mainWindow, newDataDir);
 }
 
 /**
@@ -151,5 +163,5 @@ export function cleanup(): void {
     db.close();
     db = null;
   }
-  isRegistered = false;
+  isDataLayerInitialized = false;
 }

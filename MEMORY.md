@@ -24,6 +24,8 @@
 - [x] Obsidian-Kompatibilität
 - [x] i18n (Deutsch + Englisch)
 - [x] Release-Vorbereitung (README, LICENSE, Build-Scripts)
+- [x] US-26: Welcome Screen bei Erststart (Datenverzeichnis auswählen/einrichten)
+- [x] US-27: Datenverzeichnis wechseln (Runtime, ohne App-Neustart)
 
 ### Offen / Bekannte Probleme
 - [ ] Crash beim Schließen (SIGABRT von fsevents/chokidar) — `usePolling: true` als Workaround, aber grundsätzliches Shutdown-Problem nicht gelöst
@@ -42,6 +44,9 @@
 | TypeScript-Module statt JSON für Übersetzungen | Compiler fängt fehlende Keys ab, Funktionen für Interpolation | 2026-03 |
 | Frontmatter-Werte bleiben deutsch | `status: neu`, `priority: hoch` etc. sind Datenformat, nicht UI | 2026-03 |
 | Kontexte = Projekte, nicht Personen | DSGVO + Produktpositionierung | 2026-03 |
+| Zwei-Phasen-Startup (Phase 1 + Phase 2) | Welcome Screen braucht IPC ohne Daten-Layer; Phase 2 erst nach Verzeichniswahl | 2026-03 |
+| Runtime-Verzeichniswechsel statt Relaunch | Cleanup + Re-Init ist nahtloser als app.relaunch() | 2026-03 |
+| safeHandle in utils.ts extrahiert | Zirkuläre Abhängigkeit zwischen ipc/index.ts und ipc/startup.ts aufgelöst | 2026-03 |
 
 ## Lessons Learned / Gotchas
 
@@ -52,8 +57,16 @@
 - **electron-rebuild**: Muss nach jeder Electron-Version-Änderung laufen, sonst kryptische native-Module-Fehler.
 - **TipTap Roundtripping**: Nur den aktiven Update-Block durch TipTap serialisieren, nicht den gesamten Body — sonst Whitespace-Drift.
 
+- [x] GitHub-Release-Vorbereitung (package.json, README, CHANGELOG, .gitignore, git init)
+- [x] Beispielprojekt erstellt (example/ mit 4 Kontexten, 8 Topics)
+- [x] Console.log Statements auf Dev-Mode konditioniert
+- [x] HTML lang-Attribute auf "en" gesetzt
+- [x] docs/ und example/ vom App-Bundle ausgeschlossen
+
 ## Nächste Schritte
 
+- GitHub Repo erstellen (`andipie/Cadence`) und `git remote add origin` + `git push`
 - Production Build testen (Icon-Pfad-Fix für `dock.setIcon()`)
-- DevTools im Dev-Modus nicht automatisch öffnen
 - Crash-Fix für Shutdown evaluieren (Alternative zu chokidar?)
+- Manueller Test: Welcome Screen (Erststart) und Verzeichniswechsel (Runtime)
+- MRU-Liste für zuletzt genutzte Verzeichnisse (optional, US-27 Erweiterung)

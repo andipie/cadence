@@ -219,7 +219,8 @@ export const de: Translations = {
     title: 'Einstellungen',
     close: 'Schließen',
     dataDir: 'Datenverzeichnis',
-    dataDirHint: 'Erfordert App-Neustart zum Ändern',
+    dataDirHint: 'Alle Daten werden aus diesem Ordner geladen',
+    dataDirChange: 'Ändern…',
     defaultPriority: 'Standard-Priorität',
     defaultPriorityHint: 'Priorität für neue Themen',
     confirmDelete: 'Löschen bestätigen',
@@ -235,6 +236,10 @@ export const de: Translations = {
     language: 'Sprache',
     languageHint: 'Sprache der Benutzeroberfläche',
     autoSaveHint: 'Änderungen werden automatisch gespeichert.',
+    dataDirSwitched: 'Datenverzeichnis gewechselt',
+    dataDirSwitchError: 'Verzeichniswechsel fehlgeschlagen',
+    dataDirSetupConfirm: 'Der Ordner ist kein Cadence-Datenverzeichnis. Soll er eingerichtet werden?',
+    dataDirNotAccessible: 'Verzeichnis nicht zugänglich',
   },
 
   // --- Top bar ---
@@ -398,6 +403,29 @@ export const de: Translations = {
     dueOn: (date: string): string => `Fällig: ${date}`,
     lastUpdate: (date: string, content: string): string =>
       `Letztes Update (${date}): ${content}`,
+  },
+
+  // --- Welcome screen ---
+  welcome: {
+    title: 'Willkommen bei Cadence',
+    subtitle: 'Persönliches kontextbasiertes Themen-Tracking',
+    setupNew: 'Neues Datenverzeichnis einrichten',
+    setupNewHint: 'Erstellt die nötige Ordnerstruktur in einem Ordner deiner Wahl.',
+    openExisting: 'Bestehendes Datenverzeichnis öffnen',
+    openExistingHint: 'Wähle einen Ordner mit vorhandenen Cadence-Daten.',
+    errorUnreachable: (path: string): string =>
+      `Das Datenverzeichnis „${path}" ist nicht erreichbar. Möglicherweise wurde der Ordner gelöscht oder ein Laufwerk ist nicht gemountet.`,
+    errorInvalid: (path: string): string =>
+      `Das Verzeichnis „${path}" ist kein gültiges Cadence-Datenverzeichnis.`,
+    errorNotEmpty: 'Der gewählte Ordner ist nicht leer. Trotzdem einrichten? Es werden nur Cadence-Unterordner angelegt, bestehende Dateien werden nicht verändert.',
+    setupAnyway: 'Trotzdem einrichten',
+    setupAnywayHint: 'Bestehende Dateien werden nicht verändert.',
+    errorMissingContexts: 'Die Datei contexts/contexts.yaml fehlt.',
+    errorMissingTopics: 'Der Ordner topics/ fehlt.',
+    chooseAnother: 'Anderes Verzeichnis wählen',
+    setupOrChoose: 'Einrichten oder anderes wählen',
+    back: 'Zurück',
+    initializing: 'Wird initialisiert…',
   },
 
   // --- Common ---

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { parseTopicFile } from '../../shared/markdown';
+import { getDataDirPointerPath } from '../services/settings-service';
 import type { TopicDetail } from '../../shared/types';
 
 const RETRY_DELAYS = [100, 500, 2000];
@@ -163,6 +164,23 @@ export function moveTopicFromArchive(slug: string, dataDir: string): void {
 /**
  * Returns the default data directory path.
  */
+/**
+ * Returns the data directory path.
+ * Checks for a custom data-dir pointer file first, falls back to ~/Cadence.
+ */
 export function getDefaultDataDir(): string {
+  const pointerPath = getDataDirPointerPath();
+
+  try {
+    if (fs.existsSync(pointerPath)) {
+      const customDir = fs.readFileSync(pointerPath, 'utf-8').trim();
+      if (customDir && fs.existsSync(customDir)) {
+        return customDir;
+      }
+    }
+  } catch {
+    // Fall back to default on any error
+  }
+
   return path.join(os.homedir(), 'Cadence');
 }

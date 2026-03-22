@@ -90,14 +90,23 @@ export default function SettingsDialog(): React.ReactElement {
 
         {/* Settings form */}
         <div className="px-6 py-4 space-y-5">
-          {/* Data directory (read-only) */}
+          {/* Data directory */}
           <SettingRow label={t.settings.dataDir} hint={t.settings.dataDirHint}>
-            <input
-              type="text"
-              readOnly
-              value={settings.dataDir}
-              className="w-full px-3 py-1.5 text-sm rounded border border-border dark:border-border-dark bg-surface-secondary dark:bg-surface-secondary-dark text-text-secondary dark:text-text-secondary-dark cursor-default"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={settings.dataDir}
+                className="flex-1 px-3 py-1.5 text-sm rounded border border-border dark:border-border-dark bg-surface-secondary dark:bg-surface-secondary-dark text-text-secondary dark:text-text-secondary-dark cursor-default truncate"
+              />
+              <button
+                type="button"
+                onClick={() => useAppStore.getState().switchDataDir()}
+                className="px-3 py-1.5 text-sm rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark hover:bg-surface-secondary dark:hover:bg-surface-secondary-dark transition-colors whitespace-nowrap"
+              >
+                {t.settings.dataDirChange}
+              </button>
+            </div>
           </SettingRow>
 
           {/* Default priority */}

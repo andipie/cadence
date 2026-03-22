@@ -13,6 +13,9 @@ import type {
   UpdateViewInput,
   SearchResult,
   Settings,
+  StartupState,
+  SetupDirResult,
+  SwitchDirResult,
   AppError
 } from '../shared/types';
 
@@ -60,9 +63,16 @@ export interface ElectronAPI {
   agenda: {
     generate: (contextId: string) => Promise<string>;
   };
+  startup: {
+    getState: () => Promise<StartupState>;
+    pickFolder: () => Promise<string | null>;
+    setupDir: (dirPath: string, force: boolean) => Promise<SetupDirResult>;
+    openDir: (dirPath: string) => Promise<SetupDirResult>;
+  };
   settings: {
     get: () => Promise<Settings>;
     update: (data: Partial<Settings>) => Promise<Settings>;
+    switchDir: () => Promise<SwitchDirResult>;
   };
   system: {
     rebuildIndex: () => Promise<void>;

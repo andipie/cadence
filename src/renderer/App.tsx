@@ -8,10 +8,40 @@ import CriticalBanner from './components/shared/CriticalBanner';
 import ConflictBanner from './components/shared/ConflictBanner';
 import CommandPalette from './components/shared/CommandPalette';
 import SettingsDialog from './components/shared/SettingsDialog';
+import WelcomeScreen from './components/startup/WelcomeScreen';
 import { useAppStore } from './store/app-store';
 import type { AppError } from '@shared/types';
 
 function App(): React.ReactElement {
+  const appReady = useAppStore((s) => s.appReady);
+  const startupState = useAppStore((s) => s.startupState);
+  const loadStartupState = useAppStore((s) => s.loadStartupState);
+
+  // Load startup state on mount
+  useEffect(() => {
+    if (startupState === null) {
+      loadStartupState();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show loading screen while checking startup state
+  if (startupState === null) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-surface dark:bg-surface-dark">
+        <div className="w-6 h-6 border-2 border-accent dark:border-accent-dark border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Show welcome screen if data directory is not ready
+  if (!appReady) {
+    return <WelcomeScreen startupState={startupState} />;
+  }
+
+  return <AppMain />;
+}
+
+function AppMain(): React.ReactElement {
   const triggerQuickAddFocus = useAppStore((s) => s.triggerQuickAddFocus);
   const triggerQuickAddInbox = useAppStore((s) => s.triggerQuickAddInbox);
   const triggerAddNote = useAppStore((s) => s.triggerAddNote);
@@ -31,7 +61,6 @@ function App(): React.ReactElement {
   const toggleCommandPalette = useAppStore((s) => s.toggleCommandPalette);
   const settingsOpen = useAppStore((s) => s.settingsOpen);
   const openSettings = useAppStore((s) => s.openSettings);
-  const loadSettings = useAppStore((s) => s.loadSettings);
   const conflictFiles = useAppStore((s) => s.conflictFiles);
   const conflictDismissed = useAppStore((s) => s.conflictDismissed);
   const setConflictFiles = useAppStore((s) => s.setConflictFiles);
@@ -76,12 +105,11 @@ function App(): React.ReactElement {
       } catch {
         // Health check not available — ignore silently
       }
-      // Also check for sync conflicts and load settings
+      // Also check for sync conflicts
       recheckConflicts();
-      loadSettings();
     }
     checkHealth();
-  }, [showToast, setCriticalError, recheckConflicts, loadSettings]);
+  }, [showToast, setCriticalError, recheckConflicts]);
 
   // Global keyboard shortcuts
   useEffect(() => {

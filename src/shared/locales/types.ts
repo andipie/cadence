@@ -197,6 +197,7 @@ export interface Translations {
     close: string;
     dataDir: string;
     dataDirHint: string;
+    dataDirChange: string;
     defaultPriority: string;
     defaultPriorityHint: string;
     confirmDelete: string;
@@ -212,6 +213,10 @@ export interface Translations {
     language: string;
     languageHint: string;
     autoSaveHint: string;
+    dataDirSwitched: string;
+    dataDirSwitchError: string;
+    dataDirSetupConfirm: string;
+    dataDirNotAccessible: string;
   };
 
   // --- Top bar ---
@@ -362,6 +367,27 @@ export interface Translations {
     waitingSince: (days: number) => string;
     dueOn: (date: string) => string;
     lastUpdate: (date: string, content: string) => string;
+  };
+
+  // --- Welcome screen ---
+  welcome: {
+    title: string;
+    subtitle: string;
+    setupNew: string;
+    setupNewHint: string;
+    openExisting: string;
+    openExistingHint: string;
+    errorUnreachable: (path: string) => string;
+    errorInvalid: (path: string) => string;
+    errorNotEmpty: string;
+    setupAnyway: string;
+    setupAnywayHint: string;
+    errorMissingContexts: string;
+    errorMissingTopics: string;
+    chooseAnother: string;
+    setupOrChoose: string;
+    back: string;
+    initializing: string;
   };
 
   // --- Common ---

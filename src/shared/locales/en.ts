@@ -219,7 +219,8 @@ export const en: Translations = {
     title: 'Settings',
     close: 'Close',
     dataDir: 'Data directory',
-    dataDirHint: 'Requires app restart to change',
+    dataDirHint: 'All data is loaded from this folder',
+    dataDirChange: 'Change…',
     defaultPriority: 'Default priority',
     defaultPriorityHint: 'Priority for new topics',
     confirmDelete: 'Confirm delete',
@@ -235,6 +236,10 @@ export const en: Translations = {
     language: 'Language',
     languageHint: 'User interface language',
     autoSaveHint: 'Changes are saved automatically.',
+    dataDirSwitched: 'Data directory switched',
+    dataDirSwitchError: 'Directory switch failed',
+    dataDirSetupConfirm: 'This folder is not a Cadence data directory. Set it up?',
+    dataDirNotAccessible: 'Directory not accessible',
   },
 
   // --- Top bar ---
@@ -398,6 +403,29 @@ export const en: Translations = {
     dueOn: (date: string): string => `Due: ${date}`,
     lastUpdate: (date: string, content: string): string =>
       `Last update (${date}): ${content}`,
+  },
+
+  // --- Welcome screen ---
+  welcome: {
+    title: 'Welcome to Cadence',
+    subtitle: 'Personal context-based topic tracking',
+    setupNew: 'Set up new data directory',
+    setupNewHint: 'Creates the required folder structure in a directory of your choice.',
+    openExisting: 'Open existing data directory',
+    openExistingHint: 'Choose a folder with existing Cadence data.',
+    errorUnreachable: (path: string): string =>
+      `The data directory "${path}" is not reachable. The folder may have been deleted or a drive may not be mounted.`,
+    errorInvalid: (path: string): string =>
+      `The directory "${path}" is not a valid Cadence data directory.`,
+    errorNotEmpty: 'The selected folder is not empty. Set up anyway? Only Cadence subfolders will be created, existing files will not be modified.',
+    setupAnyway: 'Set up anyway',
+    setupAnywayHint: 'Existing files will not be modified.',
+    errorMissingContexts: 'The file contexts/contexts.yaml is missing.',
+    errorMissingTopics: 'The folder topics/ is missing.',
+    chooseAnother: 'Choose another directory',
+    setupOrChoose: 'Set up or choose another',
+    back: 'Back',
+    initializing: 'Initializing…',
   },
 
   // --- Common ---

@@ -483,3 +483,96 @@ Die relevanten Abschnitte sind dort referenziert.
 - [ ] File-Watcher erzeugt keine spürbaren UI-Freezes
 
 **Referenzen:** ARCHITECTURE.md §5 (Indizes)
+
+# Cadence — Neue User Stories: Datenverzeichnis-Management
+
+Diese Stories erweitern die bestehende USER-STORIES.md und gehören thematisch zu **Phase 1 — MVP** (nachträglich), da sie eine Grundvoraussetzung für die Nutzung sind.
+
+**Prompt-Pattern für Claude Code:**
+
+```
+Lies VISION.md, REQUIREMENTS.md, ARCHITECTURE.md und CLAUDE.md.
+Setze dann User Story [US-XX] aus USER-STORIES.md um.
+Die relevanten Abschnitte sind dort referenziert.
+```
+
+---
+
+## US-26: Startup — Datenverzeichnis Auswahl und Validierung
+
+**Als** Nutzer
+**möchte ich** beim Start von Cadence automatisch mein letztes Datenverzeichnis öffnen — oder bei Erststart eines auswählen,
+**damit** ich sofort arbeiten kann ohne jedes Mal den Pfad konfigurieren zu müssen.
+
+### Definitionen
+
+Ein Datenverzeichnis ist **gültig** wenn:
+- Der Pfad existiert und lesbar ist
+- Eine `contexts/contexts.yaml` vorhanden ist (darf leer sein)
+- Ein `topics/`-Unterordner existiert
+
+Ein Datenverzeichnis ist **initialisierbar** wenn:
+- Der Pfad existiert und beschreibbar ist
+- Es entweder leer ist oder keines der Cadence-Unterverzeichnisse enthält (kein versehentliches Überschreiben)
+
+### Startup-Flow
+
+```
+App startet
+  │
+  ├─ Gespeicherter Pfad vorhanden?
+  │   ├─ Ja → Pfad gültig?
+  │   │        ├─ Ja → Öffnen, fertig
+  │   │        └─ Nein → Pfad erreichbar aber ungültig?
+  │   │                  ├─ Ja → Dialog: "Verzeichnis einrichten oder anderes wählen?"
+  │   │                  └─ Nein (nicht erreichbar) → Fehler-Dialog mit Pfadangabe,
+  │   │                         "Anderes Verzeichnis wählen"
+  │   └─ Nein (Erststart) → Welcome-Screen
+  │
+  Welcome-Screen:
+    ├─ "Neues Datenverzeichnis einrichten" → Ordner-Auswahl → Initialisierung → Öffnen
+    └─ "Bestehendes Datenverzeichnis öffnen" → Ordner-Auswahl → Validierung → Öffnen
+```
+
+### Akzeptanzkriterien
+
+- [ ] Erststart (kein gespeicherter Pfad): Welcome-Screen mit "Neu einrichten" und "Bestehendes öffnen"
+- [ ] "Neu einrichten": OS-Ordnerauswahl-Dialog, gewählter Ordner wird initialisiert (Unterordner `topics/`, `archive/`, `contexts/`, `views/`, `trash/` anlegen, leere `contexts/contexts.yaml` erstellen)
+- [ ] "Bestehendes öffnen": OS-Ordnerauswahl-Dialog, gewählter Ordner wird validiert
+- [ ] Validierung fehlgeschlagen bei "Bestehendes": Fehlermeldung mit konkretem Grund ("contexts.yaml fehlt" / "topics/ Ordner fehlt"), zurück zur Auswahl
+- [ ] Bei gültigem Verzeichnis: Pfad wird persistent gespeichert (`electron-store` oder ähnlich), App startet normal
+- [ ] Nächster Start: Gespeicherter Pfad wird automatisch geöffnet, kein Dialog
+- [ ] Gespeicherter Pfad nicht mehr erreichbar (Ordner gelöscht, Laufwerk nicht gemountet): Fehler-Dialog mit Pfadangabe und Button "Anderes Verzeichnis wählen"
+- [ ] Gespeicherter Pfad erreichbar aber nicht mehr gültig (z.B. `contexts.yaml` gelöscht): Dialog "Verzeichnis ist kein gültiges Cadence-Verzeichnis. Einrichten oder anderes wählen?"
+- [ ] Einrichten eines nicht-leeren Ordners der bereits Cadence-fremde Dateien enthält: Warnung "Ordner ist nicht leer. Trotzdem einrichten?" mit Hinweis dass nur Cadence-Unterordner angelegt werden und bestehende Dateien nicht verändert werden
+- [ ] Kein Datenverlust: Initialisierung überschreibt niemals bestehende Dateien oder Ordner
+- [ ] Welcome-Screen und Fehler-Dialoge funktionieren in Dark Mode
+
+### Referenzen
+
+- REQUIREMENTS.md §6 (Datenverzeichnis-Einstellung)
+- ARCHITECTURE.md §2 (Datenverzeichnis-Struktur)
+
+---
+
+## US-27: Datenverzeichnis wechseln
+
+**Als** Nutzer
+**möchte ich** im laufenden Betrieb zu einem anderen Datenverzeichnis wechseln können,
+**damit** ich verschiedene Kontexte getrennt halten kann (z.B. Arbeit / Privat / Projekt).
+
+**Abhängigkeit:** US-26
+
+### Akzeptanzkriterien
+
+- [ ] Menüpunkt "Datenverzeichnis wechseln" (oder über Command Palette)
+- [ ] Gleiche Logik wie beim Start: Ordner-Auswahl → Validierung oder Initialisierung
+- [ ] Bei Wechsel: File-Watcher stoppen, SQLite-Index schließen, neues Verzeichnis öffnen, Index neu aufbauen
+- [ ] Zuletzt genutztes Verzeichnis wird als neuer Default gespeichert
+- [ ] Optional: Liste der letzten 3-5 genutzten Verzeichnisse als Schnellauswahl (MRU-Liste)
+- [ ] UI zeigt aktuelles Datenverzeichnis an (z.B. im Fenster-Titel oder in der TopBar)
+
+### Referenzen
+
+- REQUIREMENTS.md §6
+- VISION.md (Filesystem First)

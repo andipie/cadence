@@ -57,9 +57,16 @@ contextBridge.exposeInMainWorld('api', {
   agenda: {
     generate: (contextId: string) => ipcRenderer.invoke(IPC.AGENDA_GENERATE, contextId),
   },
+  startup: {
+    getState: () => ipcRenderer.invoke(IPC.STARTUP_GET_STATE),
+    pickFolder: () => ipcRenderer.invoke(IPC.STARTUP_PICK_FOLDER),
+    setupDir: (dirPath: string, force: boolean) => ipcRenderer.invoke(IPC.STARTUP_SETUP_DIR, dirPath, force),
+    openDir: (dirPath: string) => ipcRenderer.invoke(IPC.STARTUP_OPEN_DIR, dirPath),
+  },
   settings: {
     get: () => ipcRenderer.invoke(IPC.SETTINGS_GET),
     update: (data: Partial<Settings>) => ipcRenderer.invoke(IPC.SETTINGS_UPDATE, data),
+    switchDir: () => ipcRenderer.invoke(IPC.SETTINGS_SWITCH_DIR),
   },
   system: {
     rebuildIndex: () => ipcRenderer.invoke(IPC.INDEX_REBUILD),
