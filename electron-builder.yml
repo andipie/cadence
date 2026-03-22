@@ -21,19 +21,25 @@ files:
 mac:
   target: [dmg, zip]
   category: public.app-category.productivity
+  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
 
 win:
   target: [nsis, portable]
 
-extraResources:
-  - from: resources/icon.png
-    to: icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: "${productName}-${version}-win-${arch}-Setup.${ext}"
+
+portable:
+  artifactName: "${productName}-${version}-win-${arch}-Portable.${ext}"
 
 linux:
   target: [AppImage, deb]
   category: Office
   maintainer: andipie@users.noreply.github.com
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
 
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
