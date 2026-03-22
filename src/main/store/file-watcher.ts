@@ -1,5 +1,5 @@
 import fs from 'fs';
-import chokidar from 'chokidar';
+import chokidar, { type FSWatcher } from 'chokidar';
 import path from 'path';
 import type Database from 'better-sqlite3';
 import type { BrowserWindow } from 'electron';
@@ -35,20 +35,23 @@ export function startWatcher(
   topicsDir: string,
   db: Database.Database,
   mainWindow: BrowserWindow | null
-): chokidar.FSWatcher {
-  // Watch both topics/ and archive/ directories
+): FSWatcher {
+  // Watch both topics/ and archive/ directories (non-recursive, .md files only)
   const archiveDir = path.join(path.dirname(topicsDir), 'archive');
   const watcher = chokidar.watch(
-    [path.join(topicsDir, '*.md'), path.join(archiveDir, '*.md')],
+    [topicsDir, archiveDir],
     {
       ignoreInitial: true,
-      // Disable native fsevents on macOS — its CFRunLoop thread causes SIGABRT
-      // during Electron shutdown (fse_instance_destroy → uv_mutex_lock → abort).
-      // fs.watch is stable enough for our use case.
-      useFsEvents: false,
+      // chokidar v4 uses fs.watch by default (no more fsevents SIGABRT issue)
       awaitWriteFinish: {
         stabilityThreshold: 300,
-        pollInterval: 100,
+      },
+      depth: 0,
+      ignored: (filePath, stats) => {
+        // Allow directories to be traversed
+        if (stats?.isDirectory()) return false;
+        // Only watch .md files, ignore hidden files
+        return !filePath.endsWith('.md') || path.basename(filePath).startsWith('.');
       },
     }
   );
@@ -151,12 +154,12 @@ function handleFileRemove(
 // --- Frontmatter change detection ---
 
 const FRONTMATTER_FIELDS: Array<{ key: keyof Topic; label: string }> = [
-  { key: 'title', label: 'Titel' },
+  { key: 'title', label: 'Title' },
   { key: 'status', label: 'Status' },
-  { key: 'priority', label: 'Priorität' },
-  { key: 'direction', label: 'Richtung' },
-  { key: 'dueDate', label: 'Fälligkeit' },
-  { key: 'followUpDate', label: 'Wiedervorlage' },
+  { key: 'priority', label: 'Priority' },
+  { key: 'direction', label: 'Direction' },
+  { key: 'dueDate', label: 'Due Date' },
+  { key: 'followUpDate', label: 'Follow-up Date' },
 ];
 
 /**
@@ -183,7 +186,7 @@ function detectFrontmatterChanges(existing: Topic, updated: Topic): string[] {
   const oldContexts = [...existing.contexts].sort().join(',');
   const newContexts = [...updated.contexts].sort().join(',');
   if (oldContexts !== newContexts) {
-    changed.push('Kontexte');
+    changed.push('Contexts');
   }
 
   return changed;
