@@ -4,7 +4,7 @@ import { parseTopicFile, serializeTopicFile, updateFrontmatterField, addNoteEntr
 const MINIMAL_TOPIC = `---
 id: test-topic
 title: Test Topic
-status: neu
+status: new
 created_at: "2026-03-01T10:00:00.000Z"
 updated_at: "2026-03-01T10:00:00.000Z"
 ---
@@ -14,8 +14,8 @@ const FULL_TOPIC = `---
 id: full-topic
 title: Full Topic
 status: follow-up
-priority: hoch
-direction: ansprechen
+priority: high
+direction: discuss
 contexts:
   - project-a
   - project-b
@@ -44,7 +44,7 @@ First note entry.
 const UNKNOWN_FIELDS_TOPIC = `---
 id: obsidian-topic
 title: Obsidian Topic
-status: neu
+status: new
 aliases:
   - Obsidian Topic
 tags:
@@ -59,9 +59,9 @@ describe('parseTopicFile', () => {
     const topic = parseTopicFile('/topics/test-topic.md', MINIMAL_TOPIC);
     expect(topic.id).toBe('test-topic');
     expect(topic.title).toBe('Test Topic');
-    expect(topic.status).toBe('neu');
+    expect(topic.status).toBe('new');
     expect(topic.priority).toBe('normal');
-    expect(topic.direction).toBe('ansprechen');
+    expect(topic.direction).toBe('discuss');
     expect(topic.contexts).toEqual([]);
     expect(topic.dueDate).toBeNull();
     expect(topic.followUpDate).toBeNull();
@@ -74,8 +74,8 @@ describe('parseTopicFile', () => {
     expect(topic.id).toBe('full-topic');
     expect(topic.title).toBe('Full Topic');
     expect(topic.status).toBe('follow-up');
-    expect(topic.priority).toBe('hoch');
-    expect(topic.direction).toBe('ansprechen');
+    expect(topic.priority).toBe('high');
+    expect(topic.direction).toBe('discuss');
     expect(topic.contexts).toEqual(['project-a', 'project-b']);
     expect(topic.dueDate).toBe('2026-04-01');
     expect(topic.followUpDate).toBe('2026-03-20');
@@ -115,7 +115,7 @@ describe('parseTopicFile', () => {
 
   it('uses filename as fallback for missing title/id', () => {
     const noTitleContent = `---
-status: neu
+status: new
 created_at: "2026-03-01T10:00:00.000Z"
 updated_at: "2026-03-01T10:00:00.000Z"
 ---
@@ -133,12 +133,12 @@ describe('serializeTopicFile', () => {
     expect(serialized).toContain('id: full-topic');
     expect(serialized).toContain('title: Full Topic');
     expect(serialized).toContain('status: follow-up');
-    expect(serialized).toContain('priority: hoch');
+    expect(serialized).toContain('priority: high');
     expect(serialized).toContain('## 2026-03-15');
     expect(serialized).toContain('## 2026-03-01');
   });
 
-  it('omits default values (priority normal, direction ansprechen)', () => {
+  it('omits default values (priority normal, direction discuss)', () => {
     const topic = parseTopicFile('/topics/test-topic.md', MINIMAL_TOPIC);
     const serialized = serializeTopicFile(topic);
     expect(serialized).not.toContain('priority:');
@@ -181,8 +181,8 @@ describe('serializeTopicFile', () => {
 
 describe('updateFrontmatterField', () => {
   it('updates a single field without changing body', () => {
-    const updated = updateFrontmatterField(FULL_TOPIC, 'status', 'erledigt');
-    expect(updated).toContain('status: erledigt');
+    const updated = updateFrontmatterField(FULL_TOPIC, 'status', 'done');
+    expect(updated).toContain('status: done');
     // Body should still be there
     expect(updated).toContain('## 2026-03-15');
     expect(updated).toContain('## 2026-03-01');
@@ -223,5 +223,73 @@ describe('updateNoteEntry', () => {
 
   it('throws on invalid index', () => {
     expect(() => updateNoteEntry(FULL_TOPIC, 5, 'content')).toThrow();
+  });
+});
+
+describe('frontmatter migration (German → English)', () => {
+  it('migrates old German values to English on parse', () => {
+    const legacyContent = `---
+id: legacy-topic
+title: Legacy Topic
+status: neu
+priority: hoch
+direction: ansprechen
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/legacy-topic.md', legacyContent);
+    expect(topic.status).toBe('new');
+    expect(topic.priority).toBe('high');
+    expect(topic.direction).toBe('discuss');
+  });
+
+  it('migrates erledigt status to done', () => {
+    const content = `---
+id: done-topic
+title: Done Topic
+status: erledigt
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/done-topic.md', content);
+    expect(topic.status).toBe('done');
+  });
+
+  it('migrates mittel priority and liefern/warten directions', () => {
+    const content = `---
+id: mid-topic
+title: Mid Topic
+status: neu
+priority: mittel
+direction: liefern
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/mid-topic.md', content);
+    expect(topic.status).toBe('new');
+    expect(topic.priority).toBe('medium');
+    expect(topic.direction).toBe('deliver');
+
+    const waitingContent = `---
+id: wait-topic
+title: Wait Topic
+status: neu
+direction: warten
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const waitTopic = parseTopicFile('/topics/wait-topic.md', waitingContent);
+    expect(waitTopic.direction).toBe('waiting');
+  });
+
+  it('leaves already-English values unchanged', () => {
+    const topic = parseTopicFile('/topics/test-topic.md', MINIMAL_TOPIC);
+    expect(topic.status).toBe('new');
+    expect(topic.priority).toBe('normal');
+    expect(topic.direction).toBe('discuss');
   });
 });

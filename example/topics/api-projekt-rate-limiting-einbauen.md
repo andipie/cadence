@@ -1,8 +1,8 @@
 ---
 title: Add rate limiting
-status: neu
+status: new
 priority: normal
-direction: liefern
+direction: deliver
 contexts:
   - api-projekt
 created_at: "2026-03-18T09:00:00Z"

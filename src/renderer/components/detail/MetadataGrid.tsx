@@ -20,21 +20,21 @@ export default function MetadataGrid({
   const overdue = isOverdue(topic);
 
   const STATUS_OPTIONS: { value: TopicStatus; label: string }[] = [
-    { value: 'neu', label: t.status.neu },
+    { value: 'new', label: t.status.new },
     { value: 'follow-up', label: t.status['follow-up'] },
-    { value: 'erledigt', label: t.status.erledigt },
+    { value: 'done', label: t.status.done },
   ];
 
   const PRIORITY_OPTIONS: { value: TopicPriority; label: string }[] = [
-    { value: 'hoch', label: t.priority.hoch },
-    { value: 'mittel', label: t.priority.mittel },
+    { value: 'high', label: t.priority.high },
+    { value: 'medium', label: t.priority.medium },
     { value: 'normal', label: t.priority.normal },
   ];
 
   const DIRECTION_OPTIONS: { value: TopicDirection; label: string }[] = [
-    { value: 'ansprechen', label: t.direction.ansprechen },
-    { value: 'liefern', label: t.direction.liefern },
-    { value: 'warten', label: t.direction.warten },
+    { value: 'discuss', label: t.direction.discuss },
+    { value: 'deliver', label: t.direction.deliver },
+    { value: 'waiting', label: t.direction.waiting },
   ];
 
   return (

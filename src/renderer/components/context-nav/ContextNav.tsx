@@ -150,7 +150,7 @@ export default function ContextNav(): React.ReactElement {
     loadSavedViews();
   }, [loadGroups, loadSystemCounts, loadSavedViews]);
 
-  function handleSelectView(view: 'inbox' | 'overdue' | 'liefern'): void {
+  function handleSelectView(view: 'inbox' | 'overdue' | 'deliver'): void {
     setActiveView(view);
   }
 
@@ -272,7 +272,7 @@ export default function ContextNav(): React.ReactElement {
       <SystemViews
         inboxCount={systemCounts.inbox}
         overdueCount={systemCounts.overdue}
-        liefernCount={systemCounts.liefern}
+        liefernCount={systemCounts.deliver}
         activeView={activeView}
         onSelectView={handleSelectView}
       />

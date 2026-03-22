@@ -13,8 +13,8 @@ export default function SettingsDialog(): React.ReactElement {
   const [mruList, setMruList] = useState<string[]>([]);
 
   const PRIORITY_OPTIONS = useMemo(() => [
-    { value: 'hoch' as TopicPriority, label: t.priority.hoch },
-    { value: 'mittel' as TopicPriority, label: t.priority.mittel },
+    { value: 'high' as TopicPriority, label: t.priority.high },
+    { value: 'medium' as TopicPriority, label: t.priority.medium },
     { value: 'normal' as TopicPriority, label: t.priority.normal },
   ], [t]);
 

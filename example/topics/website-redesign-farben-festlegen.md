@@ -1,8 +1,8 @@
 ---
 title: Define color palette
 status: follow-up
-priority: hoch
-direction: ansprechen
+priority: high
+direction: discuss
 contexts:
   - website-redesign
 due_date: "2026-03-28"

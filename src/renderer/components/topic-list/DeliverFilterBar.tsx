@@ -4,13 +4,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 import MultiSelectDropdown from './MultiSelectDropdown';
 
 /**
- * Dedicated filter bar for the Liefern system view.
+ * Dedicated filter bar for the Deliver system view.
  * Provides context filter, time horizon quick buttons, and "without due date" checkbox.
  */
-export default function LiefernFilterBar(): React.ReactElement {
-  const liefernFilter = useAppStore((s) => s.liefernFilter);
-  const updateLiefernFilter = useAppStore((s) => s.updateLiefernFilter);
-  const resetLiefernFilter = useAppStore((s) => s.resetLiefernFilter);
+export default function DeliverFilterBar(): React.ReactElement {
+  const deliverFilter = useAppStore((s) => s.deliverFilter);
+  const updateDeliverFilter = useAppStore((s) => s.updateDeliverFilter);
+  const resetDeliverFilter = useAppStore((s) => s.resetDeliverFilter);
   const contexts = useAppStore((s) => s.contexts);
   const t = useTranslation();
 
@@ -35,9 +35,9 @@ export default function LiefernFilterBar(): React.ReactElement {
 
   // Check if any filters are active
   const hasActiveFilters =
-    (liefernFilter.contexts && liefernFilter.contexts.length > 0) ||
-    liefernFilter.dueBefore ||
-    !liefernFilter.includeNoDueDate;
+    (deliverFilter.contexts && deliverFilter.contexts.length > 0) ||
+    deliverFilter.dueBefore ||
+    !deliverFilter.includeNoDueDate;
 
   return (
     <div className="px-3 py-2 border-b border-border dark:border-border-dark space-y-2">
@@ -46,8 +46,8 @@ export default function LiefernFilterBar(): React.ReactElement {
         <MultiSelectDropdown
           label={t.filter.context}
           options={contextOptions}
-          selected={liefernFilter.contexts ?? []}
-          onChange={(values) => updateLiefernFilter({ contexts: values.length > 0 ? values : undefined })}
+          selected={deliverFilter.contexts ?? []}
+          onChange={(values) => updateDeliverFilter({ contexts: values.length > 0 ? values : undefined })}
         />
 
         {/* Separator */}
@@ -58,11 +58,11 @@ export default function LiefernFilterBar(): React.ReactElement {
           <button
             key={btn.value}
             type="button"
-            onClick={() => updateLiefernFilter({
-              dueBefore: liefernFilter.dueBefore === btn.value ? undefined : btn.value,
+            onClick={() => updateDeliverFilter({
+              dueBefore: deliverFilter.dueBefore === btn.value ? undefined : btn.value,
             })}
             className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
-              liefernFilter.dueBefore === btn.value
+              deliverFilter.dueBefore === btn.value
                 ? 'border-accent dark:border-accent-dark bg-accent/10 text-accent dark:text-accent-dark'
                 : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark hover:border-text-secondary dark:hover:border-text-secondary-dark'
             }`}
@@ -79,8 +79,8 @@ export default function LiefernFilterBar(): React.ReactElement {
         <label className="flex items-center gap-1.5 text-xs text-text-secondary dark:text-text-secondary-dark cursor-pointer select-none">
           <input
             type="checkbox"
-            checked={liefernFilter.includeNoDueDate}
-            onChange={(e) => updateLiefernFilter({ includeNoDueDate: e.target.checked })}
+            checked={deliverFilter.includeNoDueDate}
+            onChange={(e) => updateDeliverFilter({ includeNoDueDate: e.target.checked })}
             className="rounded border-border dark:border-border-dark text-accent dark:text-accent-dark focus:ring-accent dark:focus:ring-accent-dark"
           />
           {t.filter.noDueDate}
@@ -94,7 +94,7 @@ export default function LiefernFilterBar(): React.ReactElement {
           <button
             type="button"
             className="text-xs text-accent dark:text-accent-dark hover:underline"
-            onClick={resetLiefernFilter}
+            onClick={resetDeliverFilter}
             title={t.filter.resetAll}
           >
             {t.filter.reset}

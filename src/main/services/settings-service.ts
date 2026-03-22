@@ -70,7 +70,11 @@ function tryReadSettingsYaml(filePath: string): Partial<Settings> | null {
     const settings: Partial<Settings> = {};
 
     if (typeof raw.global_hotkey === 'string') settings.globalHotkey = raw.global_hotkey;
-    if (typeof raw.default_priority === 'string') settings.defaultPriority = raw.default_priority as Settings['defaultPriority'];
+    if (typeof raw.default_priority === 'string') {
+      const priorityMigration: Record<string, string> = { hoch: 'high', mittel: 'medium' };
+      const migrated = priorityMigration[raw.default_priority] ?? raw.default_priority;
+      settings.defaultPriority = migrated as Settings['defaultPriority'];
+    }
     if (typeof raw.confirm_delete === 'boolean') settings.confirmDelete = raw.confirm_delete;
     if (typeof raw.confirm_complete === 'boolean') settings.confirmComplete = raw.confirm_complete;
     if (typeof raw.warn_waiting_days === 'number') settings.warnWaitingDays = raw.warn_waiting_days;

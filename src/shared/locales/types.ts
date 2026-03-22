@@ -13,8 +13,8 @@ export interface Translations {
   nav: {
     inbox: string;
     inboxTooltip: string;
-    liefern: string;
-    liefernTooltip: string;
+    deliver: string;
+    deliverTooltip: string;
     overdue: string;
     overdueTooltip: string;
     freeView: string;

@@ -25,8 +25,8 @@ export default function DetailPanel(): React.ReactElement {
   useEffect(() => {
     if (markCompleteFocusKey > 0) {
       const topic = useAppStore.getState().selectedTopic;
-      if (topic && topic.status !== 'erledigt') {
-        useAppStore.getState().updateTopic(topic.id, { status: 'erledigt' });
+      if (topic && topic.status !== 'done') {
+        useAppStore.getState().updateTopic(topic.id, { status: 'done' });
       }
     }
   }, [markCompleteFocusKey]);
@@ -34,7 +34,7 @@ export default function DetailPanel(): React.ReactElement {
   useEffect(() => {
     if (followUpFocusKey > 0) {
       const topic = useAppStore.getState().selectedTopic;
-      if (topic && topic.status !== 'erledigt' && topic.status !== 'follow-up') {
+      if (topic && topic.status !== 'done' && topic.status !== 'follow-up') {
         useAppStore.getState().updateTopic(topic.id, { status: 'follow-up', followUpDate: null });
       }
     }
@@ -88,7 +88,7 @@ export default function DetailPanel(): React.ReactElement {
 
   function handleMarkComplete(): void {
     if (!selectedTopic) return;
-    updateTopic(selectedTopic.id, { status: 'erledigt' });
+    updateTopic(selectedTopic.id, { status: 'done' });
   }
 
   function handleFollowUp(): void {

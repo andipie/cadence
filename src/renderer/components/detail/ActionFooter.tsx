@@ -18,7 +18,7 @@ export default function ActionFooter({
   const t = useTranslation();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isCompleted = topic.status === 'erledigt';
+  const isCompleted = topic.status === 'done';
   const isFollowUp = topic.status === 'follow-up';
 
   // Cleanup timer on unmount

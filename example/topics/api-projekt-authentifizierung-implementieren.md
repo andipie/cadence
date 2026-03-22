@@ -1,8 +1,8 @@
 ---
 title: Implement authentication
 status: follow-up
-priority: hoch
-direction: liefern
+priority: high
+direction: deliver
 contexts:
   - api-projekt
 due_date: "2026-03-24"

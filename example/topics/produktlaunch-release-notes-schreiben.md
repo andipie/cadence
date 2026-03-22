@@ -1,8 +1,8 @@
 ---
 title: Write release notes
-status: neu
-priority: mittel
-direction: liefern
+status: new
+priority: medium
+direction: deliver
 contexts:
   - produktlaunch
 due_date: "2026-04-10"

@@ -91,8 +91,8 @@ export default function BulkToolbar(): React.ReactElement | null {
           <BulkDropdown
             label={t.bulk.priority}
             options={[
-              { value: 'hoch', label: t.priority.hoch },
-              { value: 'mittel', label: t.priority.mittel },
+              { value: 'high', label: t.priority.high },
+              { value: 'medium', label: t.priority.medium },
               { value: 'normal', label: t.priority.normal },
             ]}
             onSelect={(val) => handlePriorityChange(val as TopicPriority)}
@@ -103,9 +103,9 @@ export default function BulkToolbar(): React.ReactElement | null {
           <BulkDropdown
             label={t.bulk.status}
             options={[
-              { value: 'neu', label: t.status.neu },
+              { value: 'new', label: t.status.new },
               { value: 'follow-up', label: t.status['follow-up'] },
-              { value: 'erledigt', label: t.status.erledigt },
+              { value: 'done', label: t.status.done },
             ]}
             onSelect={(val) => handleStatusChange(val as TopicStatus)}
             changeLabel={t.bulk.changeLabel}
@@ -115,9 +115,9 @@ export default function BulkToolbar(): React.ReactElement | null {
           <BulkDropdown
             label={t.bulk.direction}
             options={[
-              { value: 'ansprechen', label: t.direction.ansprechen },
-              { value: 'liefern', label: t.direction.liefern },
-              { value: 'warten', label: t.direction.warten },
+              { value: 'discuss', label: t.direction.discuss },
+              { value: 'deliver', label: t.direction.deliver },
+              { value: 'waiting', label: t.direction.waiting },
             ]}
             onSelect={(val) => handleDirectionChange(val as TopicDirection)}
             changeLabel={t.bulk.changeLabel}

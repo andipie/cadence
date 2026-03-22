@@ -1,8 +1,8 @@
 ---
 title: Draft offsite agenda
-status: neu
-priority: hoch
-direction: ansprechen
+status: new
+priority: high
+direction: discuss
 contexts:
   - team-offsite
 due_date: "2026-04-01"

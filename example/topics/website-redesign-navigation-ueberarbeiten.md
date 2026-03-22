@@ -1,8 +1,8 @@
 ---
 title: Rework navigation structure
-status: neu
-priority: mittel
-direction: liefern
+status: new
+priority: medium
+direction: deliver
 contexts:
   - website-redesign
 due_date: "2026-04-05"

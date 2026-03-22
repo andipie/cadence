@@ -1,8 +1,8 @@
 ---
 title: Research venue options
-status: warten
-priority: mittel
-direction: warten
+status: waiting
+priority: medium
+direction: waiting
 contexts:
   - team-offsite
 created_at: "2026-03-01T10:00:00Z"

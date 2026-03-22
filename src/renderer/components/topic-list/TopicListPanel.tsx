@@ -7,7 +7,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { groupTopicsByDirection, groupTopics, groupTopicsByDueProximity } from '@shared/utils';
 import DirectionGroup from './DirectionGroup';
 import FilterBar from './FilterBar';
-import LiefernFilterBar from './LiefernFilterBar';
+import DeliverFilterBar from './DeliverFilterBar';
 import BulkToolbar from './BulkToolbar';
 export default function TopicListPanel(): React.ReactElement {
   const {
@@ -80,8 +80,8 @@ export default function TopicListPanel(): React.ReactElement {
     headerTitle = t.nav.inbox;
   } else if (activeView === 'overdue') {
     headerTitle = t.nav.overdue;
-  } else if (activeView === 'liefern') {
-    headerTitle = t.nav.liefern;
+  } else if (activeView === 'deliver') {
+    headerTitle = t.nav.deliver;
   } else if (isFreeView) {
     headerTitle = t.nav.freeView;
   }
@@ -115,26 +115,26 @@ export default function TopicListPanel(): React.ReactElement {
     if (isFreeView) {
       return groupTopics(topics, freeViewFilter.groupBy, contexts, t);
     }
-    if (activeView === 'liefern') {
+    if (activeView === 'deliver') {
       return groupTopicsByDueProximity(topics, t);
     }
     return groupTopicsByDirection(topics, t).map((g) => ({ key: g.direction, label: g.label, topics: g.topics }));
   }, [topics, isFreeView, activeView, freeViewFilter.groupBy, contexts, t]);
 
-  const { openCount, totalCount, hasOpenTopics, erledigtGroup, mainGroups } = useMemo(() => {
-    const _openCount = topics.filter((t) => t.status !== 'erledigt').length;
+  const { openCount, totalCount, hasOpenTopics, doneGroup, mainGroups } = useMemo(() => {
+    const _openCount = topics.filter((t) => t.status !== 'done').length;
     const _totalCount = topics.length;
-    const isLiefern = activeView === 'liefern';
-    const _hasOpenTopics = isFreeView || isLiefern
+    const isDeliver = activeView === 'deliver';
+    const _hasOpenTopics = isFreeView || isDeliver
       ? _totalCount > 0
       : topicGroups.slice(0, 3).some((g) => g.topics.length > 0);
-    const _erledigtGroup = !isFreeView && !isLiefern && topicGroups.length >= 4 ? topicGroups[3] : null;
-    const _mainGroups = !isFreeView && !isLiefern ? topicGroups.slice(0, 3) : topicGroups;
+    const _doneGroup = !isFreeView && !isDeliver && topicGroups.length >= 4 ? topicGroups[3] : null;
+    const _mainGroups = !isFreeView && !isDeliver ? topicGroups.slice(0, 3) : topicGroups;
     return {
       openCount: _openCount,
       totalCount: _totalCount,
       hasOpenTopics: _hasOpenTopics,
-      erledigtGroup: _erledigtGroup,
+      doneGroup: _doneGroup,
       mainGroups: _mainGroups,
     };
   }, [topics, isFreeView, topicGroups]);
@@ -195,7 +195,7 @@ export default function TopicListPanel(): React.ReactElement {
                   ? t.topicList.allDone
                   : activeView === 'overdue'
                     ? t.topicList.noOverdue
-                    : activeView === 'liefern'
+                    : activeView === 'deliver'
                       ? t.topicList.nothingToDeliver
                       : t.topicList.noOpenTopics}
             </p>
@@ -204,9 +204,9 @@ export default function TopicListPanel(): React.ReactElement {
                 {t.topicList.tryOtherFilters}
               </p>
             )}
-            {!isFreeView && erledigtGroup && erledigtGroup.topics.length > 0 && (
+            {!isFreeView && doneGroup && doneGroup.topics.length > 0 && (
               <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-1">
-                {t.topicList.completedExists(erledigtGroup.topics.length)}
+                {t.topicList.completedExists(doneGroup.topics.length)}
               </p>
             )}
           </div>
@@ -230,18 +230,18 @@ export default function TopicListPanel(): React.ReactElement {
       )}
 
       {/* Erledigt — show for non-free-view except overdue, collapsible */}
-      {!isFreeView && activeView !== 'overdue' && activeView !== 'liefern' && erledigtGroup && (
+      {!isFreeView && activeView !== 'overdue' && activeView !== 'deliver' && doneGroup && (
         <DirectionGroup
-          label={erledigtGroup.label}
-          topics={erledigtGroup.topics}
+          label={doneGroup.label}
+          topics={doneGroup.topics}
           selectedTopicId={selectedTopicId}
           onSelectTopic={selectTopic}
           collapsible
           defaultCollapsed
           forceExpand={
-            erledigtGroup.topics.length > 0 &&
+            doneGroup.topics.length > 0 &&
             selectedTopicIds.length > 0 &&
-            erledigtGroup.topics.some((t) => selectedTopicIds.includes(t.id))
+            doneGroup.topics.some((t) => selectedTopicIds.includes(t.id))
           }
           limit={20}
           multiSelectMode={multiSelectMode}
@@ -298,7 +298,7 @@ export default function TopicListPanel(): React.ReactElement {
       {isFreeView && <FilterBar />}
 
       {/* Liefern filter bar */}
-      {activeView === 'liefern' && <LiefernFilterBar />}
+      {activeView === 'deliver' && <DeliverFilterBar />}
 
       {/* Topic list */}
       <div className="flex-1 overflow-y-auto p-2 space-y-4">

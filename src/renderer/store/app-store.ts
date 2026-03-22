@@ -19,7 +19,7 @@ interface AppState {
   completeStartup: () => void;
 
   // Navigation
-  activeView: 'context' | 'inbox' | 'overdue' | 'liefern' | 'free-view' | 'saved-view';
+  activeView: 'context' | 'inbox' | 'overdue' | 'deliver' | 'free-view' | 'saved-view';
   activeContextId: string | null;
   selectedTopicId: string | null;
 
@@ -27,7 +27,7 @@ interface AppState {
   contexts: Context[];
   groups: ContextGroup[];
   ungroupedContexts: Context[];
-  systemCounts: { inbox: number; overdue: number; liefern: number };
+  systemCounts: { inbox: number; overdue: number; deliver: number };
 
   // Topic data
   topics: Topic[];
@@ -90,9 +90,9 @@ interface AppState {
   resetFreeViewFilter: () => void;
 
   // Liefern View filter
-  liefernFilter: { contexts?: string[]; dueBefore?: string; includeNoDueDate: boolean };
-  updateLiefernFilter: (partial: Partial<{ contexts?: string[]; dueBefore?: string; includeNoDueDate: boolean }>) => void;
-  resetLiefernFilter: () => void;
+  deliverFilter: { contexts?: string[]; dueBefore?: string; includeNoDueDate: boolean };
+  updateDeliverFilter: (partial: Partial<{ contexts?: string[]; dueBefore?: string; includeNoDueDate: boolean }>) => void;
+  resetDeliverFilter: () => void;
 
   // Saved Views
   savedViews: SavedView[];
@@ -203,7 +203,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   contexts: [],
   groups: [],
   ungroupedContexts: [],
-  systemCounts: { inbox: 0, overdue: 0, liefern: 0 },
+  systemCounts: { inbox: 0, overdue: 0, deliver: 0 },
 
   // Topic data
   topics: [],
@@ -225,7 +225,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   freeViewFilter: {},
 
   // Liefern View filter
-  liefernFilter: { includeNoDueDate: true },
+  deliverFilter: { includeNoDueDate: true },
 
   // Saved Views
   savedViews: [],
@@ -244,7 +244,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setActiveView: (view) => {
     set({ activeView: view, selectedTopicId: null });
     // Load topics for system views and free view
-    if (view === 'inbox' || view === 'overdue' || view === 'liefern' || view === 'free-view') {
+    if (view === 'inbox' || view === 'overdue' || view === 'deliver' || view === 'free-view') {
       get().loadTopics();
     }
   },
@@ -420,16 +420,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   // Liefern View filter actions
-  updateLiefernFilter: (partial) => {
-    set((state) => ({ liefernFilter: { ...state.liefernFilter, ...partial } }));
-    if (get().activeView === 'liefern') {
+  updateDeliverFilter: (partial) => {
+    set((state) => ({ deliverFilter: { ...state.deliverFilter, ...partial } }));
+    if (get().activeView === 'deliver') {
       get().loadTopics();
     }
   },
 
-  resetLiefernFilter: () => {
-    set({ liefernFilter: { includeNoDueDate: true } });
-    if (get().activeView === 'liefern') {
+  resetDeliverFilter: () => {
+    set({ deliverFilter: { includeNoDueDate: true } });
+    if (get().activeView === 'deliver') {
       get().loadTopics();
     }
   },
@@ -984,9 +984,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         filter = { inbox: true };
       } else if (activeView === 'overdue') {
         filter = { overdue: true };
-      } else if (activeView === 'liefern') {
-        const lf = get().liefernFilter;
-        filter = { direction: ['liefern'], status: ['neu', 'follow-up'], sortBy: 'due_date' };
+      } else if (activeView === 'deliver') {
+        const lf = get().deliverFilter;
+        filter = { direction: ['deliver'], status: ['new', 'follow-up'], sortBy: 'due_date' };
         if (lf.contexts && lf.contexts.length > 0) {
           filter.contexts = lf.contexts;
         }

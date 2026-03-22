@@ -196,7 +196,7 @@ export default function CommandPalette(): React.ReactElement {
                   </span>
 
                   {/* Topic badges */}
-                  {result.type === 'topic' && result.priority === 'hoch' && (
+                  {result.type === 'topic' && result.priority === 'high' && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-danger/10 text-danger dark:text-danger-dark font-medium flex-shrink-0">
                       {t.priority[result.priority]}
                     </span>

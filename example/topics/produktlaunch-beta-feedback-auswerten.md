@@ -1,8 +1,8 @@
 ---
 title: Evaluate beta feedback
-status: erledigt
-priority: hoch
-direction: liefern
+status: done
+priority: high
+direction: deliver
 contexts:
   - produktlaunch
 completed_at: "2026-03-19T15:00:00Z"

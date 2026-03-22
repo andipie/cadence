@@ -3,20 +3,20 @@ import type { Translations } from './types';
 export const de: Translations = {
   // --- Domain value labels ---
   status: {
-    neu: 'Neu',
+    new: 'Neu',
     'follow-up': 'Follow-Up',
-    warten: 'Warten',
-    erledigt: 'Erledigt',
+    waiting: 'Warten',
+    done: 'Erledigt',
   },
   priority: {
-    hoch: 'Hoch',
-    mittel: 'Mittel',
+    high: 'Hoch',
+    medium: 'Mittel',
     normal: 'Niedrig',
   },
   direction: {
-    ansprechen: 'Ansprechen',
-    liefern: 'Liefern',
-    warten: 'Warten',
+    discuss: 'Ansprechen',
+    deliver: 'Liefern',
+    waiting: 'Warten',
   },
   contextType: {
     person: 'Person',
@@ -36,8 +36,8 @@ export const de: Translations = {
   nav: {
     inbox: 'Inbox',
     inboxTooltip: 'Themen ohne Kontext-Zuordnung',
-    liefern: 'Liefern',
-    liefernTooltip: 'Alle offenen Themen die du liefern musst',
+    deliver: 'Liefern',
+    deliverTooltip: 'Alle offenen Themen die du liefern musst',
     overdue: 'Überfällig',
     overdueTooltip: 'Themen mit überschrittenem Fälligkeitsdatum',
     freeView: 'Free View',

@@ -1,82 +1,82 @@
-# MEMORY.md — Projektgedächtnis für Claude Code
+# MEMORY.md — Project Memory for Claude Code
 
-## Implementierungsstatus
+## Implementation Status
 
-### Abgeschlossen
-- [x] Phase 1: Grundstruktur (Electron + React + TypeScript + SQLite)
-- [x] Topics CRUD (Erstellen, Lesen, Aktualisieren, Löschen)
-- [x] Kontexte & Gruppen (Drag & Drop Sortierung)
-- [x] Markdown-Dateien als Datenquelle (Frontmatter + Notes)
-- [x] File-Watcher (chokidar) für Live-Updates
-- [x] SQLite Index als Cache
-- [x] System-Views: Inbox, Liefern, Überfällig
-- [x] Free View mit flexibler Gruppierung/Sortierung/Filterung
+### Completed
+- [x] Phase 1: Base structure (Electron + React + TypeScript + SQLite)
+- [x] Topics CRUD (Create, Read, Update, Delete)
+- [x] Contexts & Groups (Drag & Drop sorting)
+- [x] Markdown files as data source (Frontmatter + Notes)
+- [x] File Watcher (chokidar) for live updates
+- [x] SQLite Index as cache
+- [x] System Views: Inbox, Deliver, Overdue
+- [x] Free View with flexible grouping/sorting/filtering
 - [x] Saved Views
-- [x] Detail-Panel mit Metadata, Notes, Context-Tags
+- [x] Detail Panel with Metadata, Notes, Context Tags
 - [x] Quick Capture (Global Hotkey)
 - [x] Command Palette (⌘K)
-- [x] Agenda-Export
-- [x] Bulk-Aktionen (Multi-Select)
-- [x] Undo (letzte Aktion)
-- [x] Wiederkehrende Themen
-- [x] Drag & Drop (Topics + Kontexte)
+- [x] Agenda Export
+- [x] Bulk Actions (Multi-Select)
+- [x] Undo (last action)
+- [x] Recurring Topics
+- [x] Drag & Drop (Topics + Contexts)
 - [x] Dark Mode
-- [x] Obsidian-Kompatibilität
-- [x] i18n (Deutsch + Englisch)
-- [x] Release-Vorbereitung (README, LICENSE, Build-Scripts)
-- [x] US-26: Welcome Screen bei Erststart (Datenverzeichnis auswählen/einrichten)
-- [x] US-27: Datenverzeichnis wechseln (Runtime, ohne App-Neustart)
-- [x] MRU-Liste (letzte 5 Verzeichnisse, Schnellauswahl in Settings)
-- [x] Datenverzeichnis in TopBar + Fenstertitel anzeigen
-- [x] Production Build Icon-Fix (app.isPackaged + extraResources)
-- [x] Runtime Error Recovery (Health Check bei Verzeichnisverlust)
-- [x] Automated Tests mit vitest (52 Tests: Markdown-Parser, Slug-Service, Startup, Settings)
+- [x] Obsidian Compatibility
+- [x] i18n (German + English)
+- [x] Release Preparation (README, LICENSE, Build Scripts)
+- [x] US-26: Welcome Screen on first launch (choose/set up data directory)
+- [x] US-27: Switch data directory at runtime (no app restart needed)
+- [x] MRU list (last 5 directories, quick selection in Settings)
+- [x] Data directory shown in TopBar + window title
+- [x] Production Build Icon Fix (app.isPackaged + extraResources)
+- [x] Runtime Error Recovery (Health Check on directory loss)
+- [x] Automated Tests with vitest (52 tests: Markdown Parser, Slug Service, Startup, Settings)
+- [x] German→English data value migration (frontmatter values, internal constants, translation keys)
 
-### Offen / Bekannte Probleme
-- [x] ~~Crash beim Schließen (SIGABRT)~~ → Resolved via `useFsEvents: false` in chokidar
-- [x] ~~Production Build: Icon-Pfad crasht~~ → Fixed via `app.isPackaged` Guard + extraResources
-- [ ] Dock-Name zeigt "Electron" statt "Cadence" im Dev-Modus (funktioniert im Production Build)
-- [ ] Code Signing fehlt (kein Apple Developer Zertifikat)
-- [ ] US-21: Bilder im Notizteil (Paste aus Zwischenablage) noch nicht implementiert
+### Open / Known Issues
+- [x] ~~Crash on close (SIGABRT)~~ → Resolved via `useFsEvents: false` in chokidar
+- [x] ~~Production Build: Icon path crash~~ → Fixed via `app.isPackaged` guard + extraResources
+- [ ] Dock name shows "Electron" instead of "Cadence" in dev mode (works in production build)
+- [ ] Code Signing missing (no Apple Developer certificate)
+- [ ] US-21: Images in notes section (paste from clipboard) not yet implemented
 
-## Architekturentscheidungen
+## Architecture Decisions
 
-| Entscheidung | Warum | Datum |
+| Decision | Reason | Date |
 |---|---|---|
-| fsevents deaktiviert (`useFsEvents: false`) | SIGABRT-Crash beim Schließen durch native fsevents-Modul | 2026-03 |
-| Retrospektive-Feature entfernt | DSGVO-Bedenken bei personenbezogenen Beobachtungen | 2026-03 |
-| i18n ohne Library (eigene Lösung) | Nur 2 Sprachen, ~200 Strings — i18next wäre Over-Engineering | 2026-03 |
-| TypeScript-Module statt JSON für Übersetzungen | Compiler fängt fehlende Keys ab, Funktionen für Interpolation | 2026-03 |
-| Frontmatter-Werte bleiben deutsch | `status: neu`, `priority: hoch` etc. sind Datenformat, nicht UI | 2026-03 |
-| Kontexte = Projekte, nicht Personen | DSGVO + Produktpositionierung | 2026-03 |
-| Zwei-Phasen-Startup (Phase 1 + Phase 2) | Welcome Screen braucht IPC ohne Daten-Layer; Phase 2 erst nach Verzeichniswahl | 2026-03 |
-| Runtime-Verzeichniswechsel statt Relaunch | Cleanup + Re-Init ist nahtloser als app.relaunch() | 2026-03 |
-| safeHandle in utils.ts extrahiert | Zirkuläre Abhängigkeit zwischen ipc/index.ts und ipc/startup.ts aufgelöst | 2026-03 |
-| MRU in ~/.cadence-mru.json | Getrennt von Settings (die im Datenverzeichnis liegen); Home-Dir ist immer erreichbar | 2026-03 |
-| Vitest statt Jest | Passt zum Vite-Ökosystem (electron-vite), schnellere Ausführung | 2026-03 |
-| Nur Pure-Function-Tests | better-sqlite3 ist für Electron kompiliert — läuft nicht in vitest Node-Umgebung | 2026-03 |
+| fsevents disabled (`useFsEvents: false`) | SIGABRT crash on close caused by native fsevents module | 2026-03 |
+| Retrospective feature removed | GDPR concerns with personal observations | 2026-03 |
+| i18n without library (custom solution) | Only 2 languages, ~200 strings — i18next would be over-engineering | 2026-03 |
+| TypeScript modules instead of JSON for translations | Compiler catches missing keys, functions for interpolation | 2026-03 |
+| Frontmatter values in English | `status: new`, `priority: high` etc. — migrated from German in v0.2.0 with lazy migration on read | 2026-03 |
+| Contexts = Projects, not People | GDPR + product positioning | 2026-03 |
+| Two-phase startup (Phase 1 + Phase 2) | Welcome Screen needs IPC without data layer; Phase 2 only after directory selection | 2026-03 |
+| Runtime directory switch instead of relaunch | Cleanup + re-init is more seamless than app.relaunch() | 2026-03 |
+| safeHandle extracted to utils.ts | Resolved circular dependency between ipc/index.ts and ipc/startup.ts | 2026-03 |
+| MRU in ~/.cadence-mru.json | Separate from Settings (which live in data directory); home dir is always reachable | 2026-03 |
+| Vitest instead of Jest | Fits the Vite ecosystem (electron-vite), faster execution | 2026-03 |
+| Pure-function tests only | better-sqlite3 is compiled for Electron — doesn't run in vitest Node environment | 2026-03 |
 
 ## Lessons Learned / Gotchas
 
-- **chokidar + fsevents + Electron**: Native Module crashen beim Shutdown. `useFsEvents: false` statt `usePolling: true` — nutzt `fs.watch` statt fsevents.
-- **Electron Dock-Name**: `app.name` und Info.plist-Patching wirken nicht im Dev-Modus. Nur der Production Build zeigt den richtigen Namen.
-- **Icon im Production Build**: `app.isPackaged` für Guards verwenden, nicht `process.env.ELECTRON_RENDERER_URL`. Icons über `extraResources` in electron-builder.yml bereitstellen.
-- **`before-quit` + async**: Electron wartet nicht auf Promises in Event-Handlern. `event.preventDefault()` + späteres `app.quit()` hat Race Conditions.
-- **electron-rebuild**: Muss nach jeder Electron-Version-Änderung laufen, sonst kryptische native-Module-Fehler.
-- **TipTap Roundtripping**: Nur den aktiven Update-Block durch TipTap serialisieren, nicht den gesamten Body — sonst Whitespace-Drift.
-- **MRU-Tests**: Testen auf dem echten Home-Dir (für `~/.cadence-mru.json`) — Original sichern und wiederherstellen.
+- **chokidar + fsevents + Electron**: Native modules crash on shutdown. Use `useFsEvents: false` instead of `usePolling: true` — uses `fs.watch` instead of fsevents.
+- **Electron Dock Name**: `app.name` and Info.plist patching don't work in dev mode. Only the production build shows the correct name.
+- **Icon in Production Build**: Use `app.isPackaged` for guards, not `process.env.ELECTRON_RENDERER_URL`. Provide icons via `extraResources` in electron-builder.yml.
+- **`before-quit` + async**: Electron doesn't wait for Promises in event handlers. `event.preventDefault()` + later `app.quit()` has race conditions.
+- **electron-rebuild**: Must run after every Electron version change, otherwise cryptic native module errors.
+- **TipTap Roundtripping**: Only serialize the active update block through TipTap, not the entire body — otherwise whitespace drift.
+- **MRU Tests**: Test on the real home dir (for `~/.cadence-mru.json`) — save and restore the original.
 
-- [x] GitHub-Release-Vorbereitung (package.json, README, CHANGELOG, .gitignore, git init)
-- [x] Beispielprojekt erstellt (example/ mit 4 Kontexten, 8 Topics)
-- [x] Console.log Statements auf Dev-Mode konditioniert
-- [x] HTML lang-Attribute auf "en" gesetzt
-- [x] docs/ und example/ vom App-Bundle ausgeschlossen
-- [x] Deutsche Code-Strings in file-watcher.ts durch englische ersetzt
+- [x] GitHub release preparation (package.json, README, CHANGELOG, .gitignore, git init)
+- [x] Example project created (example/ with 4 contexts, 8 topics)
+- [x] Console.log statements conditioned on dev mode
+- [x] HTML lang attribute set to "en"
+- [x] docs/ and example/ excluded from app bundle
+- [x] German code strings in file-watcher.ts replaced with English
 
-## Nächste Schritte
+## Next Steps
 
-- GitHub Repo erstellen (`andipie/Cadence`) und `git remote add origin` + `git push`
-- Production Build testen (`npm run build:mac`)
-- Manueller Test: Welcome Screen, Verzeichniswechsel, MRU, Error Recovery
-- US-21: Bilder im Notizteil (optional für v0.2.0)
-- CHANGELOG.md für v0.2.0 aktualisieren
+- Production build test (`npm run build:mac`)
+- Manual test: Welcome Screen, directory switch, MRU, Error Recovery
+- US-21: Images in notes section (optional for v0.2.0)
+- Update CHANGELOG.md for v0.2.0

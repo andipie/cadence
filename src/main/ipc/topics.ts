@@ -161,14 +161,14 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
       };
 
       // Set completedAt when marking as erledigt
-      if (data.status === 'erledigt' && existing.status !== 'erledigt') {
+      if (data.status === 'done' && existing.status !== 'done') {
         updated.completedAt = now;
-      } else if (data.status && data.status !== 'erledigt') {
+      } else if (data.status && data.status !== 'done') {
         updated.completedAt = null;
       }
 
       // Auto-recur: when marking a recurring topic as "erledigt", transition to follow-up instead
-      if (data.status === 'erledigt' && existing.recurring && existing.recurringInterval) {
+      if (data.status === 'done' && existing.recurring && existing.recurringInterval) {
         const today = now.split('T')[0];
         const nextDate = calculateNextRecurringDate(today, existing.recurringInterval);
         updated.status = 'follow-up';
@@ -176,7 +176,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         updated.recurringNext = nextDate;
         updated.followUpDate = nextDate;
         // Add note documenting the recurrence cycle
-        const noteText = `--- Erledigt am ${formatDate(today)}, nächste Wiedervorlage ${formatDate(nextDate)} ---`;
+        const noteText = `--- Completed on ${formatDate(today)}, next follow-up ${formatDate(nextDate)} ---`;
         updated.notes = [
           { date: today, content: noteText },
           ...updated.notes,
@@ -238,7 +238,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         indexTopic(db, updated);
 
         // Archive/unarchive based on status change
-        const nowErledigt = updated.status === 'erledigt';
+        const nowErledigt = updated.status === 'done';
         if (nowErledigt && !wasArchived) {
           // Move to archive
           addToIgnoreList(oldFilePath);
@@ -398,21 +398,21 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         };
 
         // Set completedAt when marking as erledigt
-        if (data.status === 'erledigt' && existing.status !== 'erledigt') {
+        if (data.status === 'done' && existing.status !== 'done') {
           updated.completedAt = now;
-        } else if (data.status && data.status !== 'erledigt') {
+        } else if (data.status && data.status !== 'done') {
           updated.completedAt = null;
         }
 
         // Auto-recur: when marking a recurring topic as "erledigt", transition to follow-up
-        if (data.status === 'erledigt' && existing.recurring && existing.recurringInterval) {
+        if (data.status === 'done' && existing.recurring && existing.recurringInterval) {
           const today = now.split('T')[0];
           const nextDate = calculateNextRecurringDate(today, existing.recurringInterval);
           updated.status = 'follow-up';
           updated.completedAt = null;
           updated.recurringNext = nextDate;
           updated.followUpDate = nextDate;
-          const noteText = `--- Erledigt am ${formatDate(today)}, nächste Wiedervorlage ${formatDate(nextDate)} ---`;
+          const noteText = `--- Completed on ${formatDate(today)}, next follow-up ${formatDate(nextDate)} ---`;
           updated.notes = [
             { date: today, content: noteText },
             ...updated.notes,
@@ -430,7 +430,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         indexTopic(db, updated);
 
         // Archive/unarchive based on status change
-        const nowErledigt = updated.status === 'erledigt';
+        const nowErledigt = updated.status === 'done';
         if (nowErledigt && !wasArchived) {
           addToIgnoreList(filePath);
           try {
@@ -572,7 +572,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         };
 
         // Reset status if it was erledigt (copy should be active)
-        if (duplicate.status === 'erledigt') {
+        if (duplicate.status === 'done') {
           duplicate.status = DEFAULT_STATUS;
         }
 

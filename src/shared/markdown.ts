@@ -52,6 +52,19 @@ interface FrontmatterRaw {
 
 const BODY_DATE_HEADER_REGEX = /^## (\d{4}-\d{2}-\d{2})\s*$/;
 
+// --- Frontmatter value migration (German → English) ---
+
+const MIGRATION_MAP: Record<string, Record<string, string>> = {
+  status: { neu: 'new', erledigt: 'done' },
+  priority: { hoch: 'high', mittel: 'medium' },
+  direction: { ansprechen: 'discuss', liefern: 'deliver', warten: 'waiting' },
+};
+
+function migrateFrontmatterValue(field: string, value: string): string {
+  const map = MIGRATION_MAP[field];
+  return map?.[value] ?? value;
+}
+
 // --- Parsing ---
 
 /**
@@ -73,9 +86,9 @@ export function parseTopicFile(filePath: string, content: string): TopicDetail {
   const topic: TopicDetail = {
     id,
     title: fm.title || fileName,
-    status: (fm.status as TopicStatus) || DEFAULT_STATUS,
-    priority: (fm.priority as TopicPriority) || DEFAULT_PRIORITY,
-    direction: (fm.direction as TopicDirection) || DEFAULT_DIRECTION,
+    status: (fm.status ? migrateFrontmatterValue('status', fm.status) as TopicStatus : DEFAULT_STATUS),
+    priority: (fm.priority ? migrateFrontmatterValue('priority', fm.priority) as TopicPriority : DEFAULT_PRIORITY),
+    direction: (fm.direction ? migrateFrontmatterValue('direction', fm.direction) as TopicDirection : DEFAULT_DIRECTION),
     contexts: fm.contexts || [],
     dueDate: fm.due_date ?? null,
     followUpDate: fm.follow_up_date ?? null,

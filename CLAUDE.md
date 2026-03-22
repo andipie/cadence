@@ -1,24 +1,24 @@
-# CLAUDE.md — Projekt-Konventionen für Claude Code
+# CLAUDE.md — Project Conventions for Claude Code
 
-## Projekt
+## Project
 
-Cadence — Persönliches kontextbasiertes Themen-Tracking-Tool.
-Electron + React + TypeScript + SQLite + Markdown-Dateien.
+Cadence — Personal context-based topic tracking tool.
+Electron + React + TypeScript + SQLite + Markdown files.
 
-Lies vor jeder Arbeit die relevanten Dokumente:
-- `MEMORY.md` — Projektfortschritt, Lessons Learned, offene Probleme, Architekturentscheidungen
-- `VISION.md` — Warum dieses Tool existiert, Designprinzipien, Abgrenzung
-- `REQUIREMENTS.md` — Vollständiges Feature-Set, Datenmodell, UI-Konzept
-- `ARCHITECTURE.md` — Technische Architektur, Projektstruktur, Typen, Datenflüsse
-- `USER-STORIES.md` — User Stories mit Akzeptanzkriterien, Abhängigkeiten, Reihenfolge
+Read the relevant documents before any work:
+- `MEMORY.md` — Project progress, lessons learned, open issues, architectural decisions
+- `VISION.md` — Why this tool exists, design principles, scope
+- `REQUIREMENTS.md` — Complete feature set, data model, UI concept
+- `ARCHITECTURE.md` — Technical architecture, project structure, types, data flows
+- `USER-STORIES.md` — User stories with acceptance criteria, dependencies, order
 
-## Tech-Stack
+## Tech Stack
 
-| Was | Technologie | Version |
-|-----|-------------|---------|
+| What | Technology | Version |
+|------|-----------|---------|
 | Runtime | Electron | Latest stable |
 | Frontend | React | 18+ |
-| Sprache | TypeScript | Strict mode |
+| Language | TypeScript | Strict mode |
 | Styling | Tailwind CSS | 3.x |
 | State | zustand | Latest |
 | Editor | TipTap | Latest |
@@ -28,18 +28,18 @@ Lies vor jeder Arbeit die relevanten Dokumente:
 | Build | electron-vite | Latest |
 | Distribution | electron-builder | Latest |
 
-## Projektstruktur
+## Project Structure
 
 ```
 src/
 ├── main/           # Electron Main Process (Node.js)
-│   ├── ipc/        # IPC Handler
+│   ├── ipc/        # IPC Handlers
 │   ├── store/      # FileStore, IndexDB, FileWatcher
-│   └── services/   # Business-Logik
+│   └── services/   # Business Logic
 ├── renderer/       # React Frontend
-│   ├── components/ # UI-Komponenten
+│   ├── components/ # UI Components
 │   ├── hooks/      # Custom Hooks
-│   ├── store/      # zustand App-State
+│   ├── store/      # zustand App State
 │   └── styles/     # Tailwind globals
 ├── shared/         # Shared Types, Constants, Utilities
 │   ├── types.ts
@@ -49,182 +49,182 @@ src/
 └── preload/        # Electron Context Bridge
 ```
 
-## Coding-Konventionen
+## Coding Conventions
 
 ### TypeScript
 
-- **Strict Mode ist Pflicht.** `"strict": true` in tsconfig. Kein `any`, keine `as`-Casts ohne Kommentar warum.
-- **Interfaces über Types** für Objekt-Shapes. `type` nur für Unions und Utility-Types.
-- **Keine Klassen** im Frontend. Funktionale Komponenten + Hooks. Im Main Process sind Services als Module (Funktions-Exports) implementiert, nicht als Klassen.
-- **Enum-Werte sind lowercase Strings**, nicht TypeScript `enum`. Siehe `shared/types.ts` — wir nutzen Union-Types: `type TopicStatus = 'neu' | 'follow-up' | 'erledigt'`.
-- **Explizite Return-Types** bei exportierten Funktionen. Interne Funktionen dürfen inferiert werden.
-- **Keine Default-Exports** außer bei React-Komponenten-Dateien die genau eine Komponente exportieren.
+- **Strict mode is mandatory.** `"strict": true` in tsconfig. No `any`, no `as` casts without a comment explaining why.
+- **Interfaces over types** for object shapes. `type` only for unions and utility types.
+- **No classes** in the frontend. Functional components + hooks. In the main process, services are implemented as modules (function exports), not classes.
+- **Enum values are lowercase strings**, not TypeScript `enum`. See `shared/types.ts` — we use union types: `type TopicStatus = 'new' | 'follow-up' | 'done'`.
+- **Explicit return types** on exported functions. Internal functions may use inference.
+- **No default exports** except for React component files that export exactly one component.
 
 ### React
 
-- **Funktionale Komponenten** ausschließlich. Keine Klassen-Komponenten.
-- **Ein Komponente pro Datei.** Dateiname = Komponentenname in PascalCase.
-- **Props als Interface** definiert, direkt über der Komponente in der gleichen Datei.
-- **Hooks-Reihenfolge:** zustand Store → eigene Hooks → useState → useEffect → useMemo/useCallback → Handler → JSX.
-- **Event-Handler** heißen `handleXyz` in der Komponente, Props heißen `onXyz`.
-- **Keine Inline-Styles.** Alles über Tailwind-Klassen. Ausnahme: dynamische Werte die von Daten abhängen (z.B. Drag-Position).
-- **Keine `useEffect` für Datenlade-Logik.** Daten werden über IPC in zustand-Actions geladen, Komponenten subscriben auf den Store.
+- **Functional components** exclusively. No class components.
+- **One component per file.** Filename = component name in PascalCase.
+- **Props as interface** defined directly above the component in the same file.
+- **Hooks order:** zustand store → custom hooks → useState → useEffect → useMemo/useCallback → handlers → JSX.
+- **Event handlers** are named `handleXyz` in the component, props are named `onXyz`.
+- **No inline styles.** Everything via Tailwind classes. Exception: dynamic values dependent on data (e.g., drag position).
+- **No `useEffect` for data loading logic.** Data is loaded via IPC in zustand actions, components subscribe to the store.
 
 ### Tailwind
 
-- **Keine Magic Numbers.** Tailwind-Spacing-Skala nutzen (`p-2`, `gap-3`), keine `p-[13px]`.
-- **Konsistente Farbpalette.** Semantic Colors definieren (z.B. `text-danger`, `bg-surface`) und in `tailwind.config.js` registrieren.
-- **Dark Mode** über `dark:` Prefix. Jede Farbangabe braucht ein Dark-Mode-Pendant. System-Detection über Electron `nativeTheme`.
-- **Responsive ist nicht nötig.** Desktop-only, feste Mindestbreite. Kein Mobile-Layout.
+- **No magic numbers.** Use Tailwind spacing scale (`p-2`, `gap-3`), not `p-[13px]`.
+- **Consistent color palette.** Define semantic colors (e.g., `text-danger`, `bg-surface`) and register them in `tailwind.config.js`.
+- **Dark mode** via `dark:` prefix. Every color declaration needs a dark mode counterpart. System detection via Electron `nativeTheme`.
+- **Responsive is not needed.** Desktop only, fixed minimum width. No mobile layout.
 
 ### Electron / IPC
 
-- **Main Process ist stateless.** Kein UI-State im Main Process. Er ist ein Daten-Service.
-- **Alle IPC-Channels** sind in `shared/ipc-channels.ts` als Constants definiert. Nie String-Literals in `ipcRenderer.invoke()`.
-- **IPC-Handler** validieren ihre Inputs. Nie Daten aus dem Renderer blind vertrauen.
-- **Fehler im Main Process** werden als strukturierte Fehler zurückgegeben, nicht als Exceptions die den Prozess crashen.
-- **Context Bridge** exponiert eine typisierte API. Der Renderer greift nie direkt auf `ipcRenderer` zu.
+- **Main process is stateless.** No UI state in the main process. It is a data service.
+- **All IPC channels** are defined as constants in `shared/ipc-channels.ts`. Never use string literals in `ipcRenderer.invoke()`.
+- **IPC handlers** validate their inputs. Never blindly trust data from the renderer.
+- **Errors in the main process** are returned as structured errors, not as exceptions that crash the process.
+- **Context Bridge** exposes a typed API. The renderer never accesses `ipcRenderer` directly.
 
 ### SQLite
 
-- **Index ist ein wegwerfbarer Cache.** Alles was im Index steht, muss aus dem Filesystem reproduzierbar sein.
-- **Keine Schreiboperationen** die nur den Index ändern. Jeder Write geht ans Filesystem, der File-Watcher aktualisiert den Index.
-- **Prepared Statements** für alle Queries. Nie String-Concatenation für SQL.
-- **Synchrone API** von `better-sqlite3` nutzen. Das ist im Main Process OK und vermeidet async-Komplexität.
-- **`electron-rebuild`** ist Pflicht nach jeder Electron-Version-Änderung. `better-sqlite3` ist ein nativer Node-Modul der für die Electron-Node-Version kompiliert werden muss. Im `postinstall`-Script verankern: `"postinstall": "electron-rebuild"`.
+- **Index is a disposable cache.** Everything in the index must be reproducible from the filesystem.
+- **No write operations** that only change the index. Every write goes to the filesystem, the file watcher updates the index.
+- **Prepared statements** for all queries. Never use string concatenation for SQL.
+- **Synchronous API** from `better-sqlite3`. This is fine in the main process and avoids async complexity.
+- **`electron-rebuild`** is mandatory after every Electron version change. `better-sqlite3` is a native Node module that must be compiled for the Electron Node version. Anchor it in the `postinstall` script: `"postinstall": "electron-rebuild"`.
 
 ### TipTap / Markdown
 
-- **Roundtrip-Qualität ist kritisch.** TipTap arbeitet intern mit ProseMirror, nicht mit Markdown. Die Serialisierung über `tiptap-markdown` kann Formatierung leicht verändern.
-- **Whitespace-Stabilität testen.** Beim Laden und Speichern dürfen keine Leerzeilen hinzugefügt oder entfernt werden. Sonst entstehen unnötige Diffs in Git und Cloud-Sync.
-- **Nur den editierten Update-Block serialisieren.** Nicht den gesamten Body durch TipTap jagen — nur der aktive Update-Block wird via TipTap editiert, der Rest bleibt als Raw-Markdown unangetastet.
-- **Frühzeitig Spike machen:** Vor dem Bau des Detail-Panels einen isolierten Test: Markdown laden → TipTap → zurück nach Markdown → Byte-Vergleich. Wenn das nicht stabil ist, Alternativen evaluieren (z.B. CodeMirror mit Markdown-Vorschau statt WYSIWYG).
+- **Roundtrip quality is critical.** TipTap works internally with ProseMirror, not Markdown. Serialization via `tiptap-markdown` can slightly alter formatting.
+- **Test whitespace stability.** Loading and saving must not add or remove blank lines. Otherwise unnecessary diffs appear in Git and cloud sync.
+- **Only serialize the edited update block.** Don't run the entire body through TipTap — only the active update block is edited via TipTap, the rest stays as raw Markdown.
+- **Do an early spike:** Before building the detail panel, run an isolated test: load Markdown → TipTap → back to Markdown → byte comparison. If this isn't stable, evaluate alternatives (e.g., CodeMirror with Markdown preview instead of WYSIWYG).
 
-### Dateisystem
+### Filesystem
 
-- **Atomare Writes.** Beim Schreiben einer Markdown-Datei: In temporäre Datei schreiben, dann rename. Nie direkt überschreiben — das kann bei Absturz zu Datenverlust führen.
-- **Windows-Caveat bei Rename:** `fs.rename()` kann fehlschlagen wenn die Zieldatei von einem anderen Prozess offen ist (z.B. Obsidian, Cloud-Sync-Agent). Retry-Logik mit exponentiellem Backoff implementieren (3 Versuche, 100ms → 500ms → 2000ms).
-- **File-Watcher Debouncing.** Eigene Schreiboperationen erzeugen File-Events. Debounce implementieren um Ping-Pong zwischen Write und Watch zu vermeiden. Pattern: Vor dem Write den erwarteten Pfad in eine Ignore-Liste eintragen, nach dem Write wieder entfernen.
-- **Pfade immer über `path.join()`**. Nie String-Concatenation für Dateipfade.
-- **Relative Pfade** in der Datenbank und im Frontmatter. Der absolute Basis-Pfad (`dataDir`) wird nur einmal aufgelöst.
-- **Slug-basierte Dateinamen.** Titel → Slug via `slug-service.ts`. Bei Titel-Umbenennung: Datei umbenennen, Attachments-Ordner umbenennen, Index aktualisiert sich via File-Watcher. Bei Slug-Kollision: Suffix anhängen (`-2`, `-3`, ...).
-- **`contexts.yaml` Backup.** Bei jedem erfolgreichen Schreiben eine Kopie als `contexts.yaml.bak` anlegen. Beim Laden: wenn Original korrupt, automatisch Backup versuchen.
+- **Atomic writes.** When writing a Markdown file: write to a temporary file, then rename. Never overwrite directly — this can lead to data loss on crash.
+- **Windows caveat with rename:** `fs.rename()` can fail if the target file is held open by another process (e.g., Obsidian, cloud sync agent). Implement retry logic with exponential backoff (3 attempts, 100ms → 500ms → 2000ms).
+- **File watcher debouncing.** Our own write operations generate file events. Implement debouncing to avoid ping-pong between write and watch. Pattern: before the write, add the expected path to an ignore list; after the write, remove it.
+- **Paths always via `path.join()`**. Never use string concatenation for file paths.
+- **Relative paths** in the database and frontmatter. The absolute base path (`dataDir`) is resolved only once.
+- **Slug-based filenames.** Title → slug via `slug-service.ts`. On title rename: rename file, rename attachments folder, index updates via file watcher. On slug collision: append suffix (`-2`, `-3`, ...).
+- **`contexts.yaml` backup.** On every successful write, create a copy as `contexts.yaml.bak`. On load: if the original is corrupt, automatically try the backup.
 
 ### Undo
 
-- **Immer vor einer destruktiven Aktion** den vollständigen Datei-Inhalt und Pfad im `UndoAction`-Objekt sichern.
-- **Nur die letzte Aktion** speichern — kein Multi-Step-Undo-Stack.
-- **Toast mit Rückgängig-Link** nach jeder Statusänderung, Löschung, Prio-/Richtungsänderung. Auto-dismiss nach 5 Sekunden.
-- **Neue Aktion überschreibt** das vorherige Undo.
+- **Always before a destructive action** save the complete file content and path in the `UndoAction` object.
+- **Only save the last action** — no multi-step undo stack.
+- **Toast with undo link** after every status change, deletion, priority/direction change. Auto-dismiss after 5 seconds.
+- **New action overwrites** the previous undo.
 
 ### Error Handling
 
-- **Fehler nie verschlucken.** Jeder Fehler im Main Process wird als strukturiertes `AppError`-Objekt an den Renderer gesendet.
-- **Korrupte Dateien isolieren.** Eine kaputte Markdown-Datei darf nicht den Rest der App blockieren. Datei als fehlerhaft markieren, Rest normal laden.
-- **Toast-Severity beachten:** Info (auto-dismiss 5s), Warning (manuell schließen), Error (manuell schließen), Critical (persistenter Banner oben).
-- **SQLite-Index ist wegwerfbar.** Bei jedem unerklärlichen Index-Problem: löschen und neu aufbauen. Nie versuchen einen korrupten Index zu reparieren.
+- **Never swallow errors.** Every error in the main process is sent as a structured `AppError` object to the renderer.
+- **Isolate corrupt files.** A broken Markdown file must not block the rest of the app. Mark file as erroneous, load the rest normally.
+- **Observe toast severity:** Info (auto-dismiss 5s), Warning (manual close), Error (manual close), Critical (persistent banner at top).
+- **SQLite index is disposable.** For any unexplainable index problem: delete and rebuild. Never try to repair a corrupt index.
 
 ### Electron Setup
 
-- **`better-sqlite3` braucht `electron-rebuild`.** Native Node-Module müssen für Electrons Node-Version kompiliert werden. Im `postinstall`-Script: `electron-rebuild -f -w better-sqlite3`. Ohne das gibt es kryptische Laufzeitfehler.
-- **TipTap ↔ Markdown Roundtripping früh testen.** TipTap arbeitet intern mit ProseMirror, nicht Markdown. Die `tiptap-markdown`-Extension hat Eigenheiten bei der Serialisierung. Früh einen Roundtrip-Test schreiben: Markdown → TipTap → Markdown darf keine unbeabsichtigten Formatierungsänderungen erzeugen. Kritisch für Obsidian-Koexistenz und Git-Diffs.
+- **`better-sqlite3` needs `electron-rebuild`.** Native Node modules must be compiled for Electron's Node version. In the `postinstall` script: `electron-rebuild -f -w better-sqlite3`. Without this, cryptic runtime errors occur.
+- **Test TipTap ↔ Markdown roundtripping early.** TipTap works internally with ProseMirror, not Markdown. The `tiptap-markdown` extension has serialization quirks. Write a roundtrip test early: Markdown → TipTap → Markdown must not produce unintended formatting changes. Critical for Obsidian coexistence and Git diffs.
 
-## Benennungen
+## Naming Conventions
 
-| Was | Konvention | Beispiel |
-|-----|-----------|---------|
-| Dateien (Komponenten) | PascalCase | `TopicRow.tsx` |
-| Dateien (Module) | kebab-case | `file-store.ts` |
-| Dateien (Hooks) | camelCase mit `use` | `useTopics.ts` |
+| What | Convention | Example |
+|------|-----------|---------|
+| Files (Components) | PascalCase | `TopicRow.tsx` |
+| Files (Modules) | kebab-case | `file-store.ts` |
+| Files (Hooks) | camelCase with `use` | `useTopics.ts` |
 | Interfaces | PascalCase | `TopicFilter` |
-| Type-Aliases | PascalCase | `TopicStatus` |
-| Funktionen | camelCase | `parseTopicFile()` |
-| Konstanten | UPPER_SNAKE_CASE | `IPC.TOPICS_LIST` |
+| Type Aliases | PascalCase | `TopicStatus` |
+| Functions | camelCase | `parseTopicFile()` |
+| Constants | UPPER_SNAKE_CASE | `IPC.TOPICS_LIST` |
 | React Props | PascalCase + `Props` | `TopicRowProps` |
-| CSS-Klassen | Tailwind Utilities | — |
-| IPC-Channels | `domain:action` | `topics:list` |
-| Frontmatter-Keys | snake_case | `due_date`, `follow_up_date` |
-| TypeScript-Properties | camelCase | `dueDate`, `followUpDate` |
+| CSS Classes | Tailwind Utilities | — |
+| IPC Channels | `domain:action` | `topics:list` |
+| Frontmatter Keys | snake_case | `due_date`, `follow_up_date` |
+| TypeScript Properties | camelCase | `dueDate`, `followUpDate` |
 
 ## Do's
 
-- **Lies die VISION.md** wenn du unsicher bist, ob ein Feature reingehört. Die Designprinzipien sind der Maßstab.
-- **Filesystem zuerst.** Bei jedem neuen Feature frag dich: "Wie sieht das in der Markdown-Datei aus?" Dann erst: "Wie sieht das in der UI aus?"
-- **Kleine, fokussierte Commits.** Ein Feature, ein logischer Schritt. Nicht drei Features in einem Durchgang.
-- **Fehler abfangen.** Dateien können fehlen, YAML kann kaputt sein, Frontmatter kann unerwartete Werte haben. Defensive Programmierung im FileStore und Parser.
-- **Typen aus `shared/types.ts` verwenden.** Nie eigene Interfaces für die gleichen Datenstrukturen im Renderer oder Main Process definieren.
-- **Tests für den Daten-Layer.** FileStore, Markdown-Parser, IndexDB-Queries sind testbar und müssen getestet werden. UI-Tests sind optional.
-- **User-facing Strings auf Deutsch.** Die UI ist Deutsch. Variablen, Code-Kommentare und Dokumentation auf Englisch.
+- **Read VISION.md** when unsure whether a feature belongs. The design principles are the standard.
+- **Filesystem first.** For every new feature ask: "How does this look in the Markdown file?" Only then: "How does this look in the UI?"
+- **Small, focused commits.** One feature, one logical step. Not three features in one go.
+- **Catch errors.** Files can be missing, YAML can be broken, frontmatter can have unexpected values. Defensive programming in FileStore and Parser.
+- **Use types from `shared/types.ts`.** Never define your own interfaces for the same data structures in the renderer or main process.
+- **Tests for the data layer.** FileStore, Markdown parser, IndexDB queries are testable and must be tested. UI tests are optional.
+- **UI strings are localized.** The UI supports German and English via the translation system. Default language is English.
 
 ## Don'ts
 
-- **Kein Over-Engineering.** Keine Abstraction-Layer die nur eine Implementierung haben. Kein DI-Container, kein Event-Bus, kein Redux.
-- **Keine externen Dienste.** Kein Analytics, kein Telemetry, kein Auto-Update-Server, keine Cloud-API. Das Tool ist 100% offline.
-- **Keine Daten im Main-Memory cachen** die aus SQLite kommen. SQLite ist schnell genug. Der Renderer hat seinen zustand-Store, der Main Process fragt SQLite.
-- **Kein Over-Fetching.** Die Kontextansicht lädt nur Topics für den aktiven Kontext, nicht alle Topics. Der Index macht das billig.
-- **Keine Breaking Changes am Frontmatter** ohne Migrationspfad. Wenn sich das Schema ändert, muss es einen Migrator geben der bestehende Dateien aktualisiert.
-- **Keine Circular Dependencies** zwischen `main/`, `renderer/`, `shared/`. Shared importiert nie aus Main oder Renderer. Renderer importiert nie direkt aus Main.
-- **Kein `console.log` als Error-Handling.** Fehler werden strukturiert behandelt und dem Renderer als Fehler-Responses zurückgegeben.
-- **Keine UI-Frameworks** wie Material UI, Chakra, Ant Design. Alles ist Tailwind + eigene Komponenten. Das hält die Bundle-Size klein und das Design konsistent.
+- **No over-engineering.** No abstraction layers that have only one implementation. No DI container, no event bus, no Redux.
+- **No external services.** No analytics, no telemetry, no auto-update server, no cloud API. The tool is 100% offline.
+- **Don't cache data in main memory** that comes from SQLite. SQLite is fast enough. The renderer has its zustand store, the main process queries SQLite.
+- **No over-fetching.** The context view loads only topics for the active context, not all topics. The index makes this cheap.
+- **No breaking changes to frontmatter** without a migration path. If the schema changes, there must be a migrator that updates existing files.
+- **No circular dependencies** between `main/`, `renderer/`, `shared/`. Shared never imports from main or renderer. Renderer never imports directly from main.
+- **No `console.log` as error handling.** Errors are handled structurally and returned to the renderer as error responses.
+- **No UI frameworks** like Material UI, Chakra, Ant Design. Everything is Tailwind + custom components. This keeps bundle size small and design consistent.
 
-## Entwicklungs-Workflow
+## Development Workflow
 
-### Session-Start & -Ende
+### Session Start & End
 
-**Am Anfang jeder Session:**
-1. Lies `MEMORY.md` — dort steht der aktuelle Projektstand, offene Probleme und Lessons Learned
+**At the start of every session:**
+1. Read `MEMORY.md` — it contains the current project status, open issues, and lessons learned
 
-**Am Ende jeder produktiven Session (Feature, Bugfix, Refactoring):**
-1. Aktualisiere `MEMORY.md`:
-   - Implementierungsstatus: Was wurde abgeschlossen?
-   - Neue bekannte Probleme oder Gotchas?
-   - Neue Architekturentscheidungen?
-   - Nächste Schritte aktualisieren
+**At the end of every productive session (feature, bugfix, refactoring):**
+1. Update `MEMORY.md`:
+   - Implementation status: What was completed?
+   - New known issues or gotchas?
+   - New architectural decisions?
+   - Update next steps
 
-### Neue Feature implementieren
+### Implementing a New Feature
 
-1. Prüfe welche User Story in `USER-STORIES.md` umgesetzt wird
-2. Lies die referenzierten Abschnitte in `REQUIREMENTS.md` und `ARCHITECTURE.md`
-3. Prüfe die Akzeptanzkriterien der Story — sie definieren "fertig"
-4. Starte mit dem Daten-Layer (shared Types → Main Service → IPC Handler)
-5. Dann UI (Hook → Komponente → Integration)
-6. Gehe die Akzeptanzkriterien einzeln durch und verifiziere
+1. Check which user story in `USER-STORIES.md` is being implemented
+2. Read the referenced sections in `REQUIREMENTS.md` and `ARCHITECTURE.md`
+3. Check the acceptance criteria of the story — they define "done"
+4. Start with the data layer (shared types → main service → IPC handler)
+5. Then UI (hook → component → integration)
+6. Go through acceptance criteria one by one and verify
 
-### Bug fixen
+### Fixing a Bug
 
-1. Reproduziere den Bug
-2. Identifiziere ob Main oder Renderer betroffen ist
-3. Fixe die Ursache, nicht das Symptom
-4. Prüfe ob der Fix Seiteneffekte auf den File-Watcher oder Index hat
+1. Reproduce the bug
+2. Identify whether main or renderer is affected
+3. Fix the cause, not the symptom
+4. Check whether the fix has side effects on the file watcher or index
 
 ### Refactoring
 
-1. Nur wenn eine konkrete Verbesserung das Ziel ist (Performance, Lesbarkeit, Bug-Anfälligkeit)
-2. Nie gleichzeitig mit Feature-Arbeit
-3. Tests müssen vor und nach dem Refactoring grün sein
+1. Only when a concrete improvement is the goal (performance, readability, bug-proneness)
+2. Never simultaneously with feature work
+3. Tests must be green before and after refactoring
 
 ## Slash Commands
 
-Folgende Slash Commands können in Claude Code verwendet werden:
+The following slash commands can be used in Claude Code:
 
-- `/plan` — Vor komplexen Aufgaben: Erstelle einen Plan basierend auf der aktuellen User Story, prüfe gegen REQUIREMENTS.md und ARCHITECTURE.md
-- `/review` — Code-Review: Prüfe gegen die Konventionen in dieser Datei und die Akzeptanzkriterien der aktuellen User Story
-- `/test` — Tests schreiben für die zuletzt geänderten Dateien im Daten-Layer
+- `/plan` — Before complex tasks: create a plan based on the current user story, check against REQUIREMENTS.md and ARCHITECTURE.md
+- `/review` — Code review: check against the conventions in this file and the acceptance criteria of the current user story
+- `/test` — Write tests for the most recently changed files in the data layer
 
-## Qualitätskriterien
+## Quality Criteria
 
-Code ist fertig wenn:
+Code is done when:
 
-- [ ] Alle Akzeptanzkriterien der User Story sind erfüllt
-- [ ] TypeScript kompiliert ohne Fehler (`strict: true`)
-- [ ] Keine `any` Types ohne dokumentierten Grund
-- [ ] IPC-Handler validiert Inputs
-- [ ] Fehler werden als `AppError`-Objekte strukturiert behandelt (kein unhandled rejection, kein `console.log`-only)
-- [ ] Destruktive Aktionen speichern vorherigen Zustand für Undo
-- [ ] UI-Strings sind Deutsch
-- [ ] Dark Mode funktioniert (alle Farben haben `dark:` Pendant)
-- [ ] Keyboard-Navigation funktioniert wo spezifiziert
-- [ ] Markdown-Dateien die geschrieben werden, sind valide und mit Obsidian kompatibel
-- [ ] Dateinamen sind korrekte Slugs (keine Sonderzeichen, Umlaute aufgelöst)
-- [ ] Kein State-Leak zwischen Main und Renderer
-- [ ] TipTap → Markdown Roundtrip verändert keine bestehende Formatierung
+- [ ] All acceptance criteria of the user story are met
+- [ ] TypeScript compiles without errors (`strict: true`)
+- [ ] No `any` types without documented reason
+- [ ] IPC handlers validate inputs
+- [ ] Errors are handled structurally as `AppError` objects (no unhandled rejection, no `console.log` only)
+- [ ] Destructive actions save previous state for undo
+- [ ] UI strings use the translation system
+- [ ] Dark mode works (all colors have `dark:` counterpart)
+- [ ] Keyboard navigation works where specified
+- [ ] Markdown files that are written are valid and Obsidian-compatible
+- [ ] Filenames are correct slugs (no special characters, umlauts resolved)
+- [ ] No state leak between main and renderer
+- [ ] TipTap → Markdown roundtrip does not alter existing formatting

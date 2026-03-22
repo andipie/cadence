@@ -173,10 +173,10 @@ function AppMain(): React.ReactElement {
         if (state.selectedTopicId && state.selectedTopic) {
           if (e.key === '1') {
             e.preventDefault();
-            state.updateTopic(state.selectedTopicId, { priority: 'hoch' });
+            state.updateTopic(state.selectedTopicId, { priority: 'high' });
           } else if (e.key === '2') {
             e.preventDefault();
-            state.updateTopic(state.selectedTopicId, { priority: 'mittel' });
+            state.updateTopic(state.selectedTopicId, { priority: 'medium' });
           } else if (e.key === '3') {
             e.preventDefault();
             state.updateTopic(state.selectedTopicId, { priority: 'normal' });

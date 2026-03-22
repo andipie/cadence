@@ -16,8 +16,8 @@ interface TopicRowProps {
 }
 
 const PRIO_COLORS: Record<string, string> = {
-  hoch: 'bg-prio-hoch',
-  mittel: 'bg-prio-mittel',
+  high: 'bg-prio-high',
+  medium: 'bg-prio-medium',
   normal: 'bg-prio-normal',
 };
 
@@ -166,7 +166,7 @@ function TopicRowInner({
           {t.topicRow.followUp}
         </span>
       )}
-      {topic.status === 'neu' && (
+      {topic.status === 'new' && (
         <span
           className="text-xs px-1.5 py-0.5 rounded bg-accent/10 text-accent dark:text-accent-dark font-medium flex-shrink-0"
           title={t.topicRow.newTopic}

@@ -10,9 +10,9 @@ export const DEFAULT_WINDOW_HEIGHT = 800;
 export const SIDEBAR_WIDTH = 240;
 export const DETAIL_PANEL_WIDTH = 380;
 
-export const DEFAULT_STATUS: TopicStatus = 'neu';
+export const DEFAULT_STATUS: TopicStatus = 'new';
 export const DEFAULT_PRIORITY: TopicPriority = 'normal';
-export const DEFAULT_DIRECTION: TopicDirection = 'ansprechen';
+export const DEFAULT_DIRECTION: TopicDirection = 'discuss';
 
 export const UNDO_TOAST_DURATION_MS = 5000;
 export const WARN_WAITING_DAYS_DEFAULT = 7;

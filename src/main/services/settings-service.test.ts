@@ -29,7 +29,7 @@ describe('readSettings / writeSettings', () => {
     const defaults = readSettings(tmpDir);
     const modified = {
       ...defaults,
-      defaultPriority: 'hoch' as const,
+      defaultPriority: 'high' as const,
       language: 'en' as const,
       warnWaitingDays: 10,
       obsidianMode: true,
@@ -38,7 +38,7 @@ describe('readSettings / writeSettings', () => {
     writeSettings(tmpDir, modified);
     const reread = readSettings(tmpDir);
 
-    expect(reread.defaultPriority).toBe('hoch');
+    expect(reread.defaultPriority).toBe('high');
     expect(reread.language).toBe('en');
     expect(reread.warnWaitingDays).toBe(10);
     expect(reread.obsidianMode).toBe(true);

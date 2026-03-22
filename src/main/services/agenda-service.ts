@@ -7,7 +7,7 @@ import { readTopicFile } from '../store/file-store';
 import { readContextsFile } from './context-service';
 import { calcWaitingDays } from '../../shared/utils';
 
-const DIRECTION_KEYS = ['ansprechen', 'liefern', 'warten'] as const;
+const DIRECTION_KEYS = ['discuss', 'deliver', 'waiting'] as const;
 
 /**
  * Truncates a string to a maximum length, adding "…" if truncated.
@@ -47,8 +47,8 @@ function shortDate(dateStr: string): string {
 function buildMetaBracket(topic: Topic, t: Translations): string {
   const parts: string[] = [];
 
-  // Status — always show for follow-up, skip for 'neu' unless priority is also normal
-  const statusLabel = (topic.status === 'neu' || topic.status === 'follow-up')
+  // Status — always show for follow-up, skip for 'new' unless priority is also normal
+  const statusLabel = (topic.status === 'new' || topic.status === 'follow-up')
     ? t.status[topic.status]
     : undefined;
   if (statusLabel) {
@@ -93,7 +93,7 @@ export function generateAgenda(db: Database.Database, dataDir: string, contextId
   populateTopicContexts(db, topics);
 
   // 3. Filter out completed topics
-  const activeTopics = topics.filter((topic) => topic.status !== 'erledigt');
+  const activeTopics = topics.filter((topic) => topic.status !== 'done');
 
   // 4. Group by direction
   const groups = new Map<string, Topic[]>();
@@ -138,12 +138,12 @@ export function generateAgenda(db: Database.Database, dataDir: string, contextId
       lines.push(`- **${topic.title}**${meta}`);
 
       // Direction-specific sub-line
-      if (dirKey === 'warten') {
+      if (dirKey === 'waiting') {
         const days = calcWaitingDays(topic);
         if (days !== null && days > 0) {
           lines.push(`  ${t.agenda.waitingSince(days)}`);
         }
-      } else if (dirKey === 'liefern' && topic.dueDate) {
+      } else if (dirKey === 'deliver' && topic.dueDate) {
         lines.push(`  ${t.agenda.dueOn(shortDate(topic.dueDate))}`);
       }
 

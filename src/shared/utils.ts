@@ -3,12 +3,12 @@ import type { Translations } from './locales/types';
 import { WARN_WAITING_DAYS_DEFAULT, WARN_WAITING_CRITICAL_DEFAULT } from './constants';
 
 /**
- * Calculates how many days a "warten" topic has been waiting.
+ * Calculates how many days a "waiting" topic has been waiting.
  * Based on updatedAt (last activity).
  * Returns null if not applicable (wrong direction or completed).
  */
 export function calcWaitingDays(topic: Topic): number | null {
-  if (topic.direction !== 'warten' || topic.status === 'erledigt') {
+  if (topic.direction !== 'waiting' || topic.status === 'done') {
     return null;
   }
 
@@ -31,51 +31,51 @@ export function getWaitingLevel(days: number): 'normal' | 'warning' | 'critical'
  * Checks if a topic is overdue (due date in the past and not completed).
  */
 export function isOverdue(topic: Topic): boolean {
-  if (!topic.dueDate || topic.status === 'erledigt') return false;
+  if (!topic.dueDate || topic.status === 'done') return false;
   const today = new Date().toISOString().split('T')[0];
   return topic.dueDate < today;
 }
 
 /**
- * Groups topics by direction, with completed topics in a separate "erledigt" group.
- * Returns groups in display order: ansprechen → liefern → warten → erledigt.
+ * Groups topics by direction, with completed topics in a separate "done" group.
+ * Returns groups in display order: discuss → deliver → waiting → done.
  */
 export function groupTopicsByDirection(
   topics: Topic[],
   t: Translations
-): { direction: TopicDirection | 'erledigt'; label: string; topics: Topic[] }[] {
+): { direction: TopicDirection | 'done'; label: string; topics: Topic[] }[] {
   const groups: Record<string, Topic[]> = {
-    ansprechen: [],
-    liefern: [],
-    warten: [],
-    erledigt: [],
+    discuss: [],
+    deliver: [],
+    waiting: [],
+    done: [],
   };
 
   for (const topic of topics) {
-    if (topic.status === 'erledigt') {
-      groups.erledigt.push(topic);
+    if (topic.status === 'done') {
+      groups.done.push(topic);
     } else {
       const dir = topic.direction;
       if (groups[dir]) {
         groups[dir].push(topic);
       } else {
-        groups.ansprechen.push(topic);
+        groups.discuss.push(topic);
       }
     }
   }
 
   const labels: Record<string, string> = {
-    ansprechen: t.direction.ansprechen,
-    liefern: t.direction.liefern,
-    warten: t.direction.warten,
-    erledigt: t.status.erledigt,
+    discuss: t.direction.discuss,
+    deliver: t.direction.deliver,
+    waiting: t.direction.waiting,
+    done: t.status.done,
   };
 
   return [
-    { direction: 'ansprechen' as const, label: labels.ansprechen, topics: groups.ansprechen },
-    { direction: 'liefern' as const, label: labels.liefern, topics: groups.liefern },
-    { direction: 'warten' as const, label: labels.warten, topics: groups.warten },
-    { direction: 'erledigt' as const, label: labels.erledigt, topics: groups.erledigt },
+    { direction: 'discuss' as const, label: labels.discuss, topics: groups.discuss },
+    { direction: 'deliver' as const, label: labels.deliver, topics: groups.deliver },
+    { direction: 'waiting' as const, label: labels.waiting, topics: groups.waiting },
+    { direction: 'done' as const, label: labels.done, topics: groups.done },
   ];
 }
 
@@ -91,24 +91,24 @@ export function groupTopics(
 ): { key: string; label: string; topics: Topic[] }[] {
   switch (groupBy) {
     case 'status': {
-      const buckets: Record<string, Topic[]> = { neu: [], 'follow-up': [], erledigt: [] };
+      const buckets: Record<string, Topic[]> = { new: [], 'follow-up': [], done: [] };
       for (const t of topics) {
         const key = t.status;
         if (buckets[key]) {
           buckets[key].push(t);
         } else {
-          buckets.neu.push(t);
+          buckets.new.push(t);
         }
       }
       return [
-        { key: 'neu', label: t.status.neu, topics: buckets.neu },
+        { key: 'new', label: t.status.new, topics: buckets.new },
         { key: 'follow-up', label: t.status['follow-up'], topics: buckets['follow-up'] },
-        { key: 'erledigt', label: t.status.erledigt, topics: buckets.erledigt },
+        { key: 'done', label: t.status.done, topics: buckets.done },
       ];
     }
 
     case 'priority': {
-      const buckets: Record<string, Topic[]> = { hoch: [], mittel: [], normal: [] };
+      const buckets: Record<string, Topic[]> = { high: [], medium: [], normal: [] };
       for (const t of topics) {
         const key = t.priority;
         if (buckets[key]) {
@@ -118,8 +118,8 @@ export function groupTopics(
         }
       }
       return [
-        { key: 'hoch', label: t.priority.hoch, topics: buckets.hoch },
-        { key: 'mittel', label: t.priority.mittel, topics: buckets.mittel },
+        { key: 'high', label: t.priority.high, topics: buckets.high },
+        { key: 'medium', label: t.priority.medium, topics: buckets.medium },
         { key: 'normal', label: t.priority.normal, topics: buckets.normal },
       ];
     }
@@ -172,25 +172,25 @@ export function groupTopics(
     default: {
       // Reuse direction grouping logic
       const buckets: Record<string, Topic[]> = {
-        ansprechen: [], liefern: [], warten: [], erledigt: [],
+        discuss: [], deliver: [], waiting: [], done: [],
       };
       for (const t of topics) {
-        if (t.status === 'erledigt') {
-          buckets.erledigt.push(t);
+        if (t.status === 'done') {
+          buckets.done.push(t);
         } else {
           const dir = t.direction;
           if (buckets[dir]) {
             buckets[dir].push(t);
           } else {
-            buckets.ansprechen.push(t);
+            buckets.discuss.push(t);
           }
         }
       }
       return [
-        { key: 'ansprechen', label: t.direction.ansprechen, topics: buckets.ansprechen },
-        { key: 'liefern', label: t.direction.liefern, topics: buckets.liefern },
-        { key: 'warten', label: t.direction.warten, topics: buckets.warten },
-        { key: 'erledigt', label: t.status.erledigt, topics: buckets.erledigt },
+        { key: 'discuss', label: t.direction.discuss, topics: buckets.discuss },
+        { key: 'deliver', label: t.direction.deliver, topics: buckets.deliver },
+        { key: 'waiting', label: t.direction.waiting, topics: buckets.waiting },
+        { key: 'done', label: t.status.done, topics: buckets.done },
       ];
     }
   }

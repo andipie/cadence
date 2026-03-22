@@ -4,9 +4,9 @@ export type Language = 'de' | 'en';
 
 // --- Enums (Union Types) ---
 
-export type TopicStatus = 'neu' | 'follow-up' | 'erledigt';
-export type TopicPriority = 'hoch' | 'mittel' | 'normal';
-export type TopicDirection = 'ansprechen' | 'liefern' | 'warten';
+export type TopicStatus = 'new' | 'follow-up' | 'done';
+export type TopicPriority = 'high' | 'medium' | 'normal';
+export type TopicDirection = 'discuss' | 'deliver' | 'waiting';
 export type ContextType = 'person' | 'meeting' | 'group' | 'place' | 'other';
 export type RecurringInterval = 'weekly' | 'biweekly' | 'monthly' | 'quarterly';
 

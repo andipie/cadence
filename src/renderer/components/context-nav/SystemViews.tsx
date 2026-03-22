@@ -4,15 +4,15 @@ import { useTranslation } from '../../hooks/useTranslation';
 interface SystemViewsProps {
   inboxCount: number;
   overdueCount: number;
-  liefernCount: number;
+  deliverCount: number;
   activeView: string;
-  onSelectView: (view: 'inbox' | 'overdue' | 'liefern') => void;
+  onSelectView: (view: 'inbox' | 'overdue' | 'deliver') => void;
 }
 
 export default function SystemViews({
   inboxCount,
   overdueCount,
-  liefernCount,
+  deliverCount,
   activeView,
   onSelectView,
 }: SystemViewsProps): React.ReactElement {
@@ -39,17 +39,17 @@ export default function SystemViews({
       <button
         type="button"
         className={`w-full px-3 py-2 rounded cursor-pointer flex items-center justify-between text-left ${
-          activeView === 'liefern'
+          activeView === 'deliver'
             ? 'bg-accent/10 text-accent dark:text-accent-dark font-medium'
             : 'hover:bg-surface-hover dark:hover:bg-surface-hover-dark text-text-primary dark:text-text-primary-dark'
         }`}
-        onClick={() => onSelectView('liefern')}
-        title={t.nav.liefernTooltip}
+        onClick={() => onSelectView('deliver')}
+        title={t.nav.deliverTooltip}
       >
-        <span>{t.nav.liefern}</span>
-        {liefernCount > 0 && (
+        <span>{t.nav.deliver}</span>
+        {deliverCount > 0 && (
           <span className="text-xs px-1.5 py-0.5 rounded-full bg-warning/10 text-warning dark:text-warning-dark font-semibold">
-            {liefernCount}
+            {deliverCount}
           </span>
         )}
       </button>

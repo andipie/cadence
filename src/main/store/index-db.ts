@@ -10,9 +10,9 @@ const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS topics (
   id              TEXT PRIMARY KEY,
   title           TEXT NOT NULL,
-  status          TEXT NOT NULL DEFAULT 'neu',
+  status          TEXT NOT NULL DEFAULT 'new',
   priority        TEXT NOT NULL DEFAULT 'normal',
-  direction       TEXT NOT NULL DEFAULT 'ansprechen',
+  direction       TEXT NOT NULL DEFAULT 'discuss',
   due_date        TEXT,
   follow_up_date  TEXT,
   created_at      TEXT NOT NULL,
@@ -278,7 +278,7 @@ export function queryTopics(db: Database.Database, filter: TopicFilter): Topic[]
       // sort_order takes precedence (manual DnD order), then priority, then due date
       orderClause = `ORDER BY
         t.sort_order ASC NULLS LAST,
-        CASE t.priority WHEN 'hoch' THEN 1 WHEN 'mittel' THEN 2 ELSE 3 END ASC,
+        CASE t.priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END ASC,
         t.due_date ASC NULLS LAST`;
       break;
   }
@@ -302,7 +302,7 @@ export function getTopicCountByContext(db: Database.Database): Map<string, numbe
     SELECT tc.context_id, COUNT(*) as count
     FROM topic_contexts tc
     JOIN topics t ON t.id = tc.topic_id
-    WHERE t.status != 'erledigt'
+    WHERE t.status != 'done'
     GROUP BY tc.context_id
   `;
 
@@ -317,28 +317,28 @@ export function getTopicCountByContext(db: Database.Database): Map<string, numbe
 /**
  * Returns counts for inbox and overdue topics.
  */
-export function getSystemViewCounts(db: Database.Database): { inbox: number; overdue: number; liefern: number } {
+export function getSystemViewCounts(db: Database.Database): { inbox: number; overdue: number; deliver: number } {
   const inboxSql = `
     SELECT COUNT(*) as count FROM topics
     WHERE id NOT IN (SELECT topic_id FROM topic_contexts)
-    AND status != 'erledigt'
+    AND status != 'done'
   `;
   const overdueSql = `
     SELECT COUNT(*) as count FROM topics
     WHERE due_date IS NOT NULL AND due_date < date('now')
-    AND status != 'erledigt'
+    AND status != 'done'
   `;
-  const liefernSql = `
+  const deliverSql = `
     SELECT COUNT(*) as count FROM topics
-    WHERE direction = 'liefern'
-    AND status != 'erledigt'
+    WHERE direction = 'deliver'
+    AND status != 'done'
   `;
 
   const inbox = (db.prepare(inboxSql).get() as { count: number }).count;
   const overdue = (db.prepare(overdueSql).get() as { count: number }).count;
-  const liefern = (db.prepare(liefernSql).get() as { count: number }).count;
+  const deliver = (db.prepare(deliverSql).get() as { count: number }).count;
 
-  return { inbox, overdue, liefern };
+  return { inbox, overdue, deliver };
 }
 
 export interface RebuildResult {
