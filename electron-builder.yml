@@ -3,6 +3,11 @@ productName: Cadence
 icon: resources/icon.png
 asar: true
 
+publish:
+  provider: github
+  owner: andipie
+  repo: Cadence
+
 directories:
   output: dist
   buildResources: resources
