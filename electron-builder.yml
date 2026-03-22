@@ -32,6 +32,7 @@ extraResources:
 linux:
   target: [AppImage, deb]
   category: Office
+  maintainer: andipie@users.noreply.github.com
 
 nsis:
   oneClick: false
