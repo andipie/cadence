@@ -48,6 +48,8 @@ export const IPC = {
   SETTINGS_GET:         'settings:get',
   SETTINGS_UPDATE:      'settings:update',
   SETTINGS_SWITCH_DIR:  'settings:switch-dir',
+  SETTINGS_MRU_LIST:    'settings:mru-list',
+  SETTINGS_SWITCH_TO_DIR: 'settings:switch-to-dir',
   CONFLICT_CHECK:       'conflict:check',
   SHOW_IN_FOLDER:       'system:show-in-folder',
   INDEX_REBUILD:        'index:rebuild',

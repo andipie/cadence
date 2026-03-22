@@ -73,6 +73,8 @@ export interface ElectronAPI {
     get: () => Promise<Settings>;
     update: (data: Partial<Settings>) => Promise<Settings>;
     switchDir: () => Promise<SwitchDirResult>;
+    mruList: () => Promise<string[]>;
+    switchToDir: (dirPath: string) => Promise<SwitchDirResult>;
   };
   system: {
     rebuildIndex: () => Promise<void>;

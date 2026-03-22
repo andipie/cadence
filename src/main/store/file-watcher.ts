@@ -1,3 +1,4 @@
+import fs from 'fs';
 import chokidar from 'chokidar';
 import path from 'path';
 import type Database from 'better-sqlite3';
@@ -57,7 +58,19 @@ export function startWatcher(
   watcher.on('unlink', (filePath) => handleFileRemove(filePath, db, mainWindow));
 
   watcher.on('error', (error) => {
-    console.error('[FileWatcher] Fehler:', error);
+    console.error('[FileWatcher] Error:', error);
+    // Check if the data directory is still accessible
+    try {
+      fs.accessSync(topicsDir, fs.constants.R_OK);
+    } catch {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(IPC.ERROR_OCCURRED, {
+          severity: 'critical',
+          message: 'Data directory no longer accessible',
+          detail: topicsDir,
+        });
+      }
+    }
   });
 
   return watcher;
@@ -85,8 +98,8 @@ function handleFileChange(
       if (changed.length > 0 && mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send(IPC.ERROR_OCCURRED, {
           severity: 'warning',
-          message: `Frontmatter von „${topic.title}" wurde extern geändert`,
-          detail: `Geänderte Felder: ${changed.join(', ')}`,
+          message: `Frontmatter of "${topic.title}" was changed externally`,
+          detail: `Changed fields: ${changed.join(', ')}`,
           autoDismiss: false,
         });
       }
@@ -99,12 +112,12 @@ function handleFileChange(
       mainWindow.webContents.send(IPC.FILE_CHANGED, topic);
     }
   } catch (err) {
-    console.error(`[FileWatcher] Fehler beim Verarbeiten von ${filePath}:`, err);
+    console.error(`[FileWatcher] Error processing ${filePath}:`, err);
     // Notify renderer about corrupt file
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IPC.ERROR_OCCURRED, {
         severity: 'warning',
-        message: 'Datei konnte nicht gelesen werden',
+        message: 'File could not be read',
         detail: path.basename(filePath),
       });
     }
@@ -131,7 +144,7 @@ function handleFileRemove(
       mainWindow.webContents.send(IPC.FILE_CHANGED, { id: topicId, deleted: true });
     }
   } catch (err) {
-    console.error(`[FileWatcher] Fehler beim Entfernen von ${filePath}:`, err);
+    console.error(`[FileWatcher] Error removing ${filePath}:`, err);
   }
 }
 

@@ -7,14 +7,27 @@ export default function TopBar(): React.ReactElement {
   const systemCounts = useAppStore((s) => s.systemCounts);
   const openCommandPalette = useAppStore((s) => s.openCommandPalette);
   const openSettings = useAppStore((s) => s.openSettings);
+  const dataDir = useAppStore((s) => s.settings?.dataDir);
   const t = useTranslation();
+
+  const folderName = dataDir ? dataDir.split('/').pop() ?? '' : '';
 
   return (
     <header className="h-12 flex-shrink-0 flex items-center justify-between px-4 border-b border-border dark:border-border-dark bg-surface-secondary dark:bg-surface-secondary-dark">
-      {/* App Name */}
-      <span className="font-bold text-lg text-text-primary dark:text-text-primary-dark">
-        {APP_NAME}
-      </span>
+      {/* App Name + Data Directory */}
+      <div className="flex items-baseline gap-2">
+        <span className="font-bold text-lg text-text-primary dark:text-text-primary-dark">
+          {APP_NAME}
+        </span>
+        {folderName && (
+          <span
+            className="text-sm text-text-secondary dark:text-text-secondary-dark truncate max-w-48"
+            title={dataDir}
+          >
+            — {folderName}
+          </span>
+        )}
+      </div>
 
       {/* Right: Badges + Search Placeholder */}
       <div className="flex items-center gap-3">

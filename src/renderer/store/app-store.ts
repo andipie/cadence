@@ -162,6 +162,7 @@ interface AppState {
 
   // Data directory switching
   switchDataDir: () => Promise<void>;
+  switchToKnownDir: (dirPath: string) => Promise<void>;
   setupAndSwitchDir: (dirPath: string) => Promise<void>;
 }
 
@@ -871,6 +872,52 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const tNew = getTranslations(result.settings.language ?? 'de');
     get().showToast(tNew.settings.dataDirSwitched);
+  },
+
+  switchToKnownDir: async (dirPath: string) => {
+    const t = getTranslations(get().settings?.language ?? 'de');
+    const result = await window.api.settings.switchToDir(dirPath);
+
+    if (!result.success) {
+      if (result.error === 'not-accessible') {
+        get().showToast(t.settings.dataDirNotAccessible, { severity: 'error' });
+      } else {
+        get().showToast(t.settings.switchDirError, { severity: 'error' });
+      }
+      return;
+    }
+
+    // Reset all UI state
+    set({
+      activeContextId: null,
+      selectedTopicId: null,
+      selectedTopic: null,
+      selectedTopicLoading: false,
+      topics: [],
+      topicsLoading: false,
+      contexts: [],
+      groups: [],
+      ungroupedContexts: [],
+      settings: result.settings,
+      savedViews: [],
+      activeSavedViewId: null,
+      multiSelectMode: false,
+      selectedTopicIds: [],
+      conflictFiles: [],
+      conflictDismissed: false,
+      activeView: 'context',
+      settingsOpen: false,
+      freeViewFilter: {},
+    });
+
+    // Reload data from new directory
+    get().loadGroups();
+    get().loadSystemCounts();
+    get().loadSavedViews();
+    get().recheckConflicts();
+
+    const tNew = getTranslations(result.settings.language ?? 'de');
+    get().showToast(tNew.settings.switchDirSuccess);
   },
 
   setupAndSwitchDir: async (dirPath: string) => {

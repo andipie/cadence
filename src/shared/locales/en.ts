@@ -240,6 +240,10 @@ export const en: Translations = {
     dataDirSwitchError: 'Directory switch failed',
     dataDirSetupConfirm: 'This folder is not a Cadence data directory. Set it up?',
     dataDirNotAccessible: 'Directory not accessible',
+    recentDirs: 'Recently used',
+    recentDirsEmpty: 'No other directories',
+    switchDirError: 'Directory switch failed',
+    switchDirSuccess: 'Data directory switched',
   },
 
   // --- Top bar ---
@@ -394,6 +398,8 @@ export const en: Translations = {
     agendaContextRequired: 'Context ID is required',
     agendaFailed: 'Could not generate agenda',
     contextBackupLoaded: 'Context configuration was corrupted. Backup has been loaded.',
+    directoryLost: 'Data directory no longer accessible',
+    directoryLostDetail: 'Please switch directories or check the connection.',
   },
 
   // --- Agenda ---

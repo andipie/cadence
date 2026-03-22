@@ -5,6 +5,8 @@ import YAML from 'yaml';
 import type { Language, Settings } from '../../shared/types';
 
 const DATA_DIR_POINTER = '.cadence-data-dir';
+const MRU_FILENAME = '.cadence-mru.json';
+const MRU_MAX_ENTRIES = 5;
 const SETTINGS_FILENAME = 'settings.yaml';
 const SETTINGS_BACKUP = 'settings.yaml.bak';
 const RETRY_DELAYS = [100, 500, 2000];
@@ -146,8 +148,50 @@ export function getDataDirPointerPath(): string {
 /**
  * Writes a custom data directory path to the pointer file.
  * On next launch, getDefaultDataDir() will read this file.
+ * Also adds the directory to the MRU list.
  */
 export function writeDataDirPointer(dataDir: string): void {
   const pointerPath = getDataDirPointerPath();
   fs.writeFileSync(pointerPath, dataDir, 'utf-8');
+  addToMruList(dataDir);
+}
+
+// --- MRU (Most Recently Used) directories ---
+
+function getMruFilePath(): string {
+  return path.join(os.homedir(), MRU_FILENAME);
+}
+
+/**
+ * Reads the MRU list of recently used data directories.
+ * Filters out paths that no longer exist. Returns max MRU_MAX_ENTRIES entries.
+ */
+export function readMruList(): string[] {
+  const mruPath = getMruFilePath();
+  try {
+    if (!fs.existsSync(mruPath)) return [];
+    const content = fs.readFileSync(mruPath, 'utf-8');
+    const parsed = JSON.parse(content) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((entry): entry is string => typeof entry === 'string' && fs.existsSync(entry))
+      .slice(0, MRU_MAX_ENTRIES);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Adds a directory path to the front of the MRU list.
+ * Deduplicates and truncates to MRU_MAX_ENTRIES.
+ */
+export function addToMruList(dirPath: string): void {
+  const mruPath = getMruFilePath();
+  const current = readMruList();
+  const updated = [dirPath, ...current.filter((p) => p !== dirPath)].slice(0, MRU_MAX_ENTRIES);
+  try {
+    fs.writeFileSync(mruPath, JSON.stringify(updated, null, 2), 'utf-8');
+  } catch {
+    // Non-critical — silently ignore MRU write failures
+  }
 }

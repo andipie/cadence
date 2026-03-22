@@ -16,12 +16,14 @@ import { registerStartupHandlers } from './startup';
 import { safeHandle } from './utils';
 import { scanConflictFiles } from '../services/conflict-service';
 import { IPC } from '../../shared/ipc-channels';
+import { APP_NAME } from '../../shared/constants';
 import type { BrowserWindow } from 'electron';
 import type Database from 'better-sqlite3';
 import type { AppError } from '../../shared/types';
 
 let db: Database.Database | null = null;
 let watcher: chokidar.FSWatcher | null = null;
+let healthCheckInterval: NodeJS.Timeout | null = null;
 let isDataLayerInitialized = false;
 
 // Startup issues collected during initialization
@@ -129,6 +131,29 @@ export function initializeDataLayer(mainWindow: BrowserWindow, dataDir: string):
     });
   }
 
+  // Start periodic health check — detect if data directory disappears at runtime
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+  }
+  healthCheckInterval = setInterval(() => {
+    try {
+      fs.accessSync(dataDir, fs.constants.R_OK);
+    } catch {
+      if (!mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(IPC.ERROR_OCCURRED, {
+          severity: 'critical',
+          message: 'Data directory lost',
+          detail: dataDir,
+        });
+      }
+      // Stop checking after first failure
+      if (healthCheckInterval) {
+        clearInterval(healthCheckInterval);
+        healthCheckInterval = null;
+      }
+    }
+  }, 30_000);
+
   isDataLayerInitialized = true;
 }
 
@@ -139,6 +164,8 @@ export function initializeDataLayer(mainWindow: BrowserWindow, dataDir: string):
 export function switchDataLayer(mainWindow: BrowserWindow, newDataDir: string): void {
   cleanup();
   initializeDataLayer(mainWindow, newDataDir);
+  // Update window title to reflect new data directory
+  mainWindow.setTitle(`${APP_NAME} — ${path.basename(newDataDir)}`);
 }
 
 /**
@@ -155,6 +182,10 @@ export function getDatabase(): Database.Database | null {
  * (no native CFRunLoop thread to tear down).
  */
 export function cleanup(): void {
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+    healthCheckInterval = null;
+  }
   if (watcher) {
     watcher.close();
     watcher = null;

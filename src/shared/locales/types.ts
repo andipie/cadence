@@ -217,6 +217,10 @@ export interface Translations {
     dataDirSwitchError: string;
     dataDirSetupConfirm: string;
     dataDirNotAccessible: string;
+    recentDirs: string;
+    recentDirsEmpty: string;
+    switchDirError: string;
+    switchDirSuccess: string;
   };
 
   // --- Top bar ---
@@ -360,6 +364,8 @@ export interface Translations {
     agendaContextRequired: string;
     agendaFailed: string;
     contextBackupLoaded: string;
+    directoryLost: string;
+    directoryLostDetail: string;
   };
 
   // --- Agenda (main process) ---

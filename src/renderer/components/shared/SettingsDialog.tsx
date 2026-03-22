@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { useAppStore } from '../../store/app-store';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { TopicPriority } from '@shared/types';
@@ -7,14 +7,21 @@ export default function SettingsDialog(): React.ReactElement {
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const closeSettings = useAppStore((s) => s.closeSettings);
+  const switchToKnownDir = useAppStore((s) => s.switchToKnownDir);
   const t = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mruList, setMruList] = useState<string[]>([]);
 
   const PRIORITY_OPTIONS = useMemo(() => [
     { value: 'hoch' as TopicPriority, label: t.priority.hoch },
     { value: 'mittel' as TopicPriority, label: t.priority.mittel },
     { value: 'normal' as TopicPriority, label: t.priority.normal },
   ], [t]);
+
+  // Load MRU list on mount
+  useEffect(() => {
+    window.api.settings.mruList().then(setMruList).catch(() => setMruList([]));
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -60,6 +67,10 @@ export default function SettingsDialog(): React.ReactElement {
     if (!isNaN(num) && num >= 1) {
       updateSettings({ [field]: num });
     }
+  }
+
+  function handleSwitchToDir(dirPath: string): void {
+    switchToKnownDir(dirPath);
   }
 
   return (
@@ -108,6 +119,37 @@ export default function SettingsDialog(): React.ReactElement {
               </button>
             </div>
           </SettingRow>
+
+          {/* MRU — Recently used directories */}
+          {mruList.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-text-primary dark:text-text-primary-dark mb-1">
+                {t.settings.recentDirs}
+              </label>
+              <div className="space-y-1">
+                {mruList.map((dirPath) => {
+                  const folderName = dirPath.split('/').pop() ?? dirPath;
+                  return (
+                    <button
+                      key={dirPath}
+                      type="button"
+                      onClick={() => handleSwitchToDir(dirPath)}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark hover:bg-surface-secondary dark:hover:bg-surface-secondary-dark transition-colors text-left"
+                      title={dirPath}
+                    >
+                      <svg className="w-4 h-4 flex-shrink-0 text-text-secondary dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                      </svg>
+                      <span className="font-medium truncate">{folderName}</span>
+                      <span className="text-xs text-text-secondary dark:text-text-secondary-dark truncate flex-1 text-right">
+                        {dirPath}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Default priority */}
           <SettingRow label={t.settings.defaultPriority} hint={t.settings.defaultPriorityHint}>

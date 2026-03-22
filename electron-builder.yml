@@ -20,6 +20,10 @@ mac:
 win:
   target: [nsis, portable]
 
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
+
 linux:
   target: [AppImage, deb]
   category: Office

@@ -30,11 +30,12 @@ protocol.registerSchemesAsPrivileged([
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): BrowserWindow {
-  // In production, electron-builder handles the icon via icon.icns.
-  // In dev mode, use the source icon.png.
-  const iconPath = process.env['ELECTRON_RENDERER_URL']
-    ? join(__dirname, '../../resources/icon.png')
-    : undefined;
+  // In production on macOS, electron-builder handles the icon via icon.icns.
+  // In production on Linux, the icon is copied to resourcesPath via extraResources.
+  // In dev mode, use the source icon.png directly.
+  const iconPath = app.isPackaged
+    ? (process.platform === 'linux' ? join(process.resourcesPath, 'icon.png') : undefined)
+    : join(__dirname, '../../resources/icon.png');
 
   mainWindow = new BrowserWindow({
     title: APP_NAME,
@@ -98,7 +99,7 @@ app.whenReady().then(() => {
   });
 
   // Set dock icon on macOS in dev mode (production build uses icon.icns from electron-builder)
-  if (process.platform === 'darwin' && app.dock && process.env['ELECTRON_RENDERER_URL']) {
+  if (process.platform === 'darwin' && app.dock && !app.isPackaged) {
     const iconPath = join(__dirname, '../../resources/icon.png');
     try {
       app.dock.setIcon(iconPath);
@@ -117,6 +118,7 @@ app.whenReady().then(() => {
   if (state.state === 'ready') {
     setCurrentDataDir(state.dataDir);
     initializeDataLayer(win, state.dataDir);
+    win.setTitle(`${APP_NAME} — ${path.basename(state.dataDir)}`);
   }
 
   // Register global hotkey for quick capture

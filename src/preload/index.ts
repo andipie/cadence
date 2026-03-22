@@ -67,6 +67,8 @@ contextBridge.exposeInMainWorld('api', {
     get: () => ipcRenderer.invoke(IPC.SETTINGS_GET),
     update: (data: Partial<Settings>) => ipcRenderer.invoke(IPC.SETTINGS_UPDATE, data),
     switchDir: () => ipcRenderer.invoke(IPC.SETTINGS_SWITCH_DIR),
+    mruList: () => ipcRenderer.invoke(IPC.SETTINGS_MRU_LIST),
+    switchToDir: (dirPath: string) => ipcRenderer.invoke(IPC.SETTINGS_SWITCH_TO_DIR, dirPath),
   },
   system: {
     rebuildIndex: () => ipcRenderer.invoke(IPC.INDEX_REBUILD),

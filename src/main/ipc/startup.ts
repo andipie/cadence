@@ -1,6 +1,8 @@
+import path from 'path';
 import { dialog } from 'electron';
 import type { BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
+import { APP_NAME } from '../../shared/constants';
 import { safeHandle } from './utils';
 import { checkStartupState, validateDataDirectory, isDirectoryEmpty, initializeNewDataDirectory } from '../services/startup-service';
 import { writeDataDirPointer } from '../services/settings-service';
@@ -87,6 +89,7 @@ export function registerStartupHandlers(
       currentDataDir = dirPath;
       if (mainWindowRef && initDataLayerFn) {
         initDataLayerFn(mainWindowRef, dirPath);
+        mainWindowRef.setTitle(`${APP_NAME} — ${path.basename(dirPath)}`);
       }
 
       return { success: true, dataDir: dirPath };
@@ -116,6 +119,7 @@ export function registerStartupHandlers(
       currentDataDir = dirPath;
       if (mainWindowRef && initDataLayerFn) {
         initDataLayerFn(mainWindowRef, dirPath);
+        mainWindowRef.setTitle(`${APP_NAME} — ${path.basename(dirPath)}`);
       }
 
       return { success: true, dataDir: dirPath };

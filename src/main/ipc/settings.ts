@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { ipcMain, dialog, BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
-import { readSettings, writeSettings, writeDataDirPointer } from '../services/settings-service';
+import { readSettings, writeSettings, writeDataDirPointer, readMruList } from '../services/settings-service';
 import { validateDataDirectory } from '../services/startup-service';
 import { setCurrentDataDir } from './startup';
 import type { Settings, AppError, SwitchDirResult } from '../../shared/types';
@@ -97,6 +97,52 @@ export function registerSettingsHandlers(
 
       // Read settings from the new directory
       const newSettings = readSettings(chosenDir);
+      return { success: true, settings: newSettings };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      return { success: false, error: message };
+    }
+  });
+
+  // Return MRU list (excluding current data directory)
+  safeHandle(IPC.SETTINGS_MRU_LIST, () => {
+    return readMruList().filter((p) => p !== dataDir);
+  });
+
+  // Switch to a known directory (from MRU list, no file dialog)
+  safeHandle(IPC.SETTINGS_SWITCH_TO_DIR, (_event, dirPath: string): SwitchDirResult => {
+    if (typeof dirPath !== 'string' || !dirPath.trim()) {
+      return { success: false, error: 'invalid-path' };
+    }
+
+    // Verify the directory is accessible
+    try {
+      fs.accessSync(dirPath, fs.constants.R_OK | fs.constants.W_OK);
+    } catch {
+      return { success: false, error: 'not-accessible' };
+    }
+
+    // Validate whether it's a valid Cadence data directory
+    const validation = validateDataDirectory(dirPath);
+    if (!validation.valid) {
+      return { success: false, error: validation.reason!, needsSetup: true };
+    }
+
+    try {
+      const win = BrowserWindow.getFocusedWindow();
+      if (!win) return { success: false, error: 'no-window' };
+
+      // Persist pointer file
+      writeDataDirPointer(dirPath);
+
+      // Switch data layer: cleanup old → init new
+      setCurrentDataDir(dirPath);
+      if (switchDataLayerFn) {
+        switchDataLayerFn(win, dirPath);
+      }
+
+      // Read settings from the new directory
+      const newSettings = readSettings(dirPath);
       return { success: true, settings: newSettings };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';

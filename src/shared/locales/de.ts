@@ -240,6 +240,10 @@ export const de: Translations = {
     dataDirSwitchError: 'Verzeichniswechsel fehlgeschlagen',
     dataDirSetupConfirm: 'Der Ordner ist kein Cadence-Datenverzeichnis. Soll er eingerichtet werden?',
     dataDirNotAccessible: 'Verzeichnis nicht zugänglich',
+    recentDirs: 'Zuletzt verwendet',
+    recentDirsEmpty: 'Keine weiteren Verzeichnisse',
+    switchDirError: 'Verzeichniswechsel fehlgeschlagen',
+    switchDirSuccess: 'Datenverzeichnis gewechselt',
   },
 
   // --- Top bar ---
@@ -394,6 +398,8 @@ export const de: Translations = {
     agendaContextRequired: 'Kontext-ID ist erforderlich',
     agendaFailed: 'Agenda konnte nicht generiert werden',
     contextBackupLoaded: 'Kontext-Konfiguration war beschädigt. Backup wurde geladen.',
+    directoryLost: 'Datenverzeichnis nicht mehr erreichbar',
+    directoryLostDetail: 'Bitte Verzeichnis wechseln oder Verbindung prüfen.',
   },
 
   // --- Agenda ---
