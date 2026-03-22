@@ -32,6 +32,8 @@ interface AppState {
   // Topic data
   topics: Topic[];
   topicsLoading: boolean;
+  visualTopicOrder: string[];
+  setVisualTopicOrder: (ids: string[]) => void;
 
   // Navigation actions
   setActiveView: (view: AppState['activeView']) => void;
@@ -156,7 +158,7 @@ interface AppState {
   settings: Settings | null;
   settingsOpen: boolean;
   loadSettings: () => Promise<void>;
-  updateSettings: (data: Partial<Settings>) => Promise<void>;
+  updateSettings: (data: Partial<Settings>, options?: { silent?: boolean }) => Promise<void>;
   openSettings: () => void;
   closeSettings: () => void;
 
@@ -208,6 +210,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Topic data
   topics: [],
   topicsLoading: false,
+  visualTopicOrder: [],
+  setVisualTopicOrder: (ids) => set({ visualTopicOrder: ids }),
 
   // Detail panel
   selectedTopic: null,
@@ -265,35 +269,31 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Keyboard navigation actions
+  // Keyboard navigation actions — use visualTopicOrder (grouped/rendered order)
   navigateUp: () => {
-    const { topics, selectedTopicId } = get();
-    if (topics.length === 0) return;
+    const { visualTopicOrder, selectedTopicId } = get();
+    if (visualTopicOrder.length === 0) return;
     if (!selectedTopicId) {
-      // Nothing selected → select last item
-      get().selectTopic(topics[topics.length - 1].id);
+      get().selectTopic(visualTopicOrder[visualTopicOrder.length - 1]);
       return;
     }
-    const currentIndex = topics.findIndex((t) => t.id === selectedTopicId);
+    const currentIndex = visualTopicOrder.indexOf(selectedTopicId);
     if (currentIndex > 0) {
-      get().selectTopic(topics[currentIndex - 1].id);
+      get().selectTopic(visualTopicOrder[currentIndex - 1]);
     }
-    // At top of list → do nothing (no wrap)
   },
 
   navigateDown: () => {
-    const { topics, selectedTopicId } = get();
-    if (topics.length === 0) return;
+    const { visualTopicOrder, selectedTopicId } = get();
+    if (visualTopicOrder.length === 0) return;
     if (!selectedTopicId) {
-      // Nothing selected → select first item
-      get().selectTopic(topics[0].id);
+      get().selectTopic(visualTopicOrder[0]);
       return;
     }
-    const currentIndex = topics.findIndex((t) => t.id === selectedTopicId);
-    if (currentIndex < topics.length - 1) {
-      get().selectTopic(topics[currentIndex + 1].id);
+    const currentIndex = visualTopicOrder.indexOf(selectedTopicId);
+    if (currentIndex >= 0 && currentIndex < visualTopicOrder.length - 1) {
+      get().selectTopic(visualTopicOrder[currentIndex + 1]);
     }
-    // At bottom of list → do nothing (no wrap)
   },
 
   deselectTopic: () => {
@@ -804,16 +804,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.error('[AppStore] Failed to load settings:', err);
     }
   },
-  updateSettings: async (data) => {
+  updateSettings: async (data, options) => {
     try {
       const updated = await window.api.settings.update(data);
       set({ settings: updated });
-      const t = getTranslations(get().settings?.language ?? 'en');
-      get().showToast(t.toast.settingsSaved, { severity: 'info' });
+      if (!options?.silent) {
+        const t = getTranslations(get().settings?.language ?? 'en');
+        get().showToast(t.toast.settingsSaved, { severity: 'info' });
+      }
     } catch (err) {
       console.error('[AppStore] Failed to update settings:', err);
-      const t = getTranslations(get().settings?.language ?? 'en');
-      get().showToast(t.toast.settingsError, { severity: 'error' });
+      if (!options?.silent) {
+        const t = getTranslations(get().settings?.language ?? 'en');
+        get().showToast(t.toast.settingsError, { severity: 'error' });
+      }
     }
   },
   openSettings: () => set({ settingsOpen: true }),

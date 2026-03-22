@@ -21,6 +21,8 @@ const DEFAULT_SETTINGS: Settings = {
   warnWaitingCritical: 14,
   obsidianMode: false,
   language: 'en',
+  sidebarWidth: 240,
+  detailPanelWidth: 380,
 };
 
 function settingsFilePath(dataDir: string): string {
@@ -83,6 +85,8 @@ function tryReadSettingsYaml(filePath: string): Partial<Settings> | null {
     if (typeof raw.language === 'string' && (raw.language === 'de' || raw.language === 'en')) {
       settings.language = raw.language as Language;
     }
+    if (typeof raw.sidebar_width === 'number') settings.sidebarWidth = raw.sidebar_width;
+    if (typeof raw.detail_panel_width === 'number') settings.detailPanelWidth = raw.detail_panel_width;
 
     return settings;
   } catch (err) {
@@ -117,6 +121,8 @@ export function writeSettings(dataDir: string, settings: Settings): void {
     warn_waiting_critical: settings.warnWaitingCritical,
     obsidian_mode: settings.obsidianMode,
     language: settings.language,
+    sidebar_width: settings.sidebarWidth,
+    detail_panel_width: settings.detailPanelWidth,
   };
 
   const yamlContent = YAML.stringify(data, { lineWidth: 0 });

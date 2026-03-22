@@ -10,6 +10,12 @@ export const DEFAULT_WINDOW_HEIGHT = 800;
 export const SIDEBAR_WIDTH = 240;
 export const DETAIL_PANEL_WIDTH = 380;
 
+export const MIN_SIDEBAR_WIDTH = 160;
+export const MAX_SIDEBAR_WIDTH = 400;
+export const MIN_DETAIL_PANEL_WIDTH = 280;
+export const MAX_DETAIL_PANEL_WIDTH = 600;
+export const MIN_MIDDLE_PANEL_WIDTH = 300;
+
 export const DEFAULT_STATUS: TopicStatus = 'new';
 export const DEFAULT_PRIORITY: TopicPriority = 'normal';
 export const DEFAULT_DIRECTION: TopicDirection = 'discuss';

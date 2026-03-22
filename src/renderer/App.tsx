@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import TopBar from './components/layout/TopBar';
 import ContextNav from './components/context-nav/ContextNav';
 import TopicListPanel from './components/topic-list/TopicListPanel';
@@ -8,9 +8,19 @@ import CriticalBanner from './components/shared/CriticalBanner';
 import ConflictBanner from './components/shared/ConflictBanner';
 import CommandPalette from './components/shared/CommandPalette';
 import SettingsDialog from './components/shared/SettingsDialog';
+import ResizeHandle from './components/shared/ResizeHandle';
 import WelcomeScreen from './components/startup/WelcomeScreen';
 import { useAppStore } from './store/app-store';
 import type { AppError } from '@shared/types';
+import {
+  SIDEBAR_WIDTH,
+  DETAIL_PANEL_WIDTH,
+  MIN_SIDEBAR_WIDTH,
+  MAX_SIDEBAR_WIDTH,
+  MIN_DETAIL_PANEL_WIDTH,
+  MAX_DETAIL_PANEL_WIDTH,
+  MIN_MIDDLE_PANEL_WIDTH,
+} from '@shared/constants';
 
 function App(): React.ReactElement {
   const appReady = useAppStore((s) => s.appReady);
@@ -66,9 +76,124 @@ function AppMain(): React.ReactElement {
   const setConflictFiles = useAppStore((s) => s.setConflictFiles);
   const dismissConflicts = useAppStore((s) => s.dismissConflicts);
   const recheckConflicts = useAppStore((s) => s.recheckConflicts);
+  const updateSettings = useAppStore((s) => s.updateSettings);
 
   const handleDismissToast = useCallback(() => dismissToast(), [dismissToast]);
   const handleUndo = useCallback(() => undoLastAction(), [undoLastAction]);
+
+  // --- Resizable panel widths ---
+  // Read initial widths from settings once; use getState() to avoid re-render on every settings change
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const s = useAppStore.getState().settings;
+    return s?.sidebarWidth ?? SIDEBAR_WIDTH;
+  });
+  const [detailWidth, setDetailWidth] = useState(() => {
+    const s = useAppStore.getState().settings;
+    return s?.detailPanelWidth ?? DETAIL_PANEL_WIDTH;
+  });
+  const sidebarDragStartRef = useRef(0);
+  const detailDragStartRef = useRef(0);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialSyncDoneRef = useRef(false);
+
+  // Sync once when settings first load (they may be null on initial render)
+  useEffect(() => {
+    if (initialSyncDoneRef.current) return;
+    const unsub = useAppStore.subscribe((state) => {
+      if (state.settings && !initialSyncDoneRef.current) {
+        initialSyncDoneRef.current = true;
+        if (state.settings.sidebarWidth != null) setSidebarWidth(state.settings.sidebarWidth);
+        if (state.settings.detailPanelWidth != null) setDetailWidth(state.settings.detailPanelWidth);
+        unsub();
+      }
+    });
+    // Check if already loaded
+    const current = useAppStore.getState().settings;
+    if (current) {
+      initialSyncDoneRef.current = true;
+      if (current.sidebarWidth != null) setSidebarWidth(current.sidebarWidth);
+      if (current.detailPanelWidth != null) setDetailWidth(current.detailPanelWidth);
+      unsub();
+    }
+    return unsub;
+  }, []);
+
+  function clampSidebar(w: number, detail: number): number {
+    const maxByWindow = window.innerWidth - detail - MIN_MIDDLE_PANEL_WIDTH - 8;
+    return Math.max(MIN_SIDEBAR_WIDTH, Math.min(w, MAX_SIDEBAR_WIDTH, maxByWindow));
+  }
+
+  function clampDetail(w: number, sidebar: number): number {
+    const maxByWindow = window.innerWidth - sidebar - MIN_MIDDLE_PANEL_WIDTH - 8;
+    return Math.max(MIN_DETAIL_PANEL_WIDTH, Math.min(w, MAX_DETAIL_PANEL_WIDTH, maxByWindow));
+  }
+
+  // Re-clamp on window resize
+  useEffect(() => {
+    function handleResize(): void {
+      setSidebarWidth((prev) => clampSidebar(prev, detailWidth));
+      setDetailWidth((prev) => clampDetail(prev, sidebarWidth));
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarWidth, detailWidth]);
+
+  const debouncedSave = useCallback((sw: number, dw: number) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      updateSettings({ sidebarWidth: sw, detailPanelWidth: dw }, { silent: true });
+    }, 300);
+  }, [updateSettings]);
+
+  // Sidebar resize handlers
+  const handleSidebarDrag = useCallback((deltaX: number) => {
+    setSidebarWidth(() => {
+      const newWidth = clampSidebar(sidebarDragStartRef.current + deltaX, detailWidth);
+      return newWidth;
+    });
+  }, [detailWidth]);
+
+  const handleSidebarDragEnd = useCallback(() => {
+    setSidebarWidth((current) => {
+      debouncedSave(current, detailWidth);
+      return current;
+    });
+  }, [detailWidth, debouncedSave]);
+
+  const handleSidebarReset = useCallback(() => {
+    const w = clampSidebar(SIDEBAR_WIDTH, detailWidth);
+    setSidebarWidth(w);
+    debouncedSave(w, detailWidth);
+  }, [detailWidth, debouncedSave]);
+
+  const handleSidebarDragStart = useCallback(() => {
+    sidebarDragStartRef.current = sidebarWidth;
+  }, [sidebarWidth]);
+
+  // Detail resize handlers
+  const handleDetailDragStart = useCallback(() => {
+    detailDragStartRef.current = detailWidth;
+  }, [detailWidth]);
+
+  const handleDetailDrag = useCallback((deltaX: number) => {
+    setDetailWidth(() => {
+      const newWidth = clampDetail(detailDragStartRef.current - deltaX, sidebarWidth);
+      return newWidth;
+    });
+  }, [sidebarWidth]);
+
+  const handleDetailDragEnd = useCallback(() => {
+    setDetailWidth((current) => {
+      debouncedSave(sidebarWidth, current);
+      return current;
+    });
+  }, [sidebarWidth, debouncedSave]);
+
+  const handleDetailReset = useCallback(() => {
+    const w = clampDetail(DETAIL_PANEL_WIDTH, sidebarWidth);
+    setDetailWidth(w);
+    debouncedSave(sidebarWidth, w);
+  }, [sidebarWidth, debouncedSave]);
 
   // Listen for error events pushed from the main process
   useEffect(() => {
@@ -236,16 +361,35 @@ function AppMain(): React.ReactElement {
 
       {/* Three-Panel Layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Linkes Panel: Kontext-Navigation */}
-        <aside className="w-[240px] flex-shrink-0 border-r border-border dark:border-border-dark bg-surface-secondary dark:bg-surface-secondary-dark flex flex-col overflow-y-auto">
+        {/* Left Panel: Context Navigation */}
+        <aside
+          className="flex-shrink-0 border-r border-border dark:border-border-dark bg-surface-secondary dark:bg-surface-secondary-dark flex flex-col overflow-y-auto"
+          style={{ width: sidebarWidth }}
+        >
           <ContextNav />
         </aside>
 
-        {/* Mittleres Panel: Topic-Liste */}
+        {/* Left resize handle */}
+        <ResizeHandle
+          onDragStart={handleSidebarDragStart}
+          onDrag={handleSidebarDrag}
+          onDragEnd={handleSidebarDragEnd}
+          onReset={handleSidebarReset}
+        />
+
+        {/* Middle Panel: Topic List */}
         <TopicListPanel />
 
-        {/* Rechtes Panel: Detail */}
-        <DetailPanel />
+        {/* Right resize handle */}
+        <ResizeHandle
+          onDragStart={handleDetailDragStart}
+          onDrag={handleDetailDrag}
+          onDragEnd={handleDetailDragEnd}
+          onReset={handleDetailReset}
+        />
+
+        {/* Right Panel: Detail */}
+        <DetailPanel width={detailWidth} />
       </div>
 
       {/* Command Palette */}

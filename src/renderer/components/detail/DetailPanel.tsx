@@ -6,8 +6,13 @@ import MetadataGrid from './MetadataGrid';
 import ContextTags from './ContextTags';
 import NotesFeed from './NotesFeed';
 import ActionFooter from './ActionFooter';
+import { DETAIL_PANEL_WIDTH } from '@shared/constants';
 
-export default function DetailPanel(): React.ReactElement {
+interface DetailPanelProps {
+  width?: number;
+}
+
+export default function DetailPanel({ width = DETAIL_PANEL_WIDTH }: DetailPanelProps): React.ReactElement {
   const {
     selectedTopicId,
     selectedTopic,
@@ -43,7 +48,7 @@ export default function DetailPanel(): React.ReactElement {
   // No topic selected
   if (!selectedTopicId) {
     return (
-      <aside className="w-[380px] flex-shrink-0 flex flex-col overflow-y-auto bg-surface dark:bg-surface-dark">
+      <aside className="flex-shrink-0 flex flex-col overflow-y-auto bg-surface dark:bg-surface-dark" style={{ width }}>
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center">
             <p className="text-lg text-text-secondary dark:text-text-secondary-dark">
@@ -61,7 +66,7 @@ export default function DetailPanel(): React.ReactElement {
   // Loading
   if (selectedTopicLoading || !selectedTopic) {
     return (
-      <aside className="w-[380px] flex-shrink-0 flex flex-col overflow-y-auto bg-surface dark:bg-surface-dark">
+      <aside className="flex-shrink-0 flex flex-col overflow-y-auto bg-surface dark:bg-surface-dark" style={{ width }}>
         <div className="flex-1 flex items-center justify-center p-8">
           <span className="text-sm text-text-secondary dark:text-text-secondary-dark">
             {t.detail.loading}
@@ -105,7 +110,7 @@ export default function DetailPanel(): React.ReactElement {
   }
 
   return (
-    <aside className="w-[380px] flex-shrink-0 flex flex-col overflow-hidden bg-surface dark:bg-surface-dark">
+    <aside className="flex-shrink-0 flex flex-col overflow-hidden bg-surface dark:bg-surface-dark" style={{ width }}>
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Title */}

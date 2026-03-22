@@ -31,6 +31,7 @@ export default function TopicListPanel(): React.ReactElement {
     toggleMultiSelect,
     toggleTopicSelection,
     reorderTopics,
+    setVisualTopicOrder,
   } = useAppStore();
 
   const t = useTranslation();
@@ -138,6 +139,22 @@ export default function TopicListPanel(): React.ReactElement {
       mainGroups: _mainGroups,
     };
   }, [topics, isFreeView, topicGroups]);
+
+  // Sync visual topic order to store for keyboard navigation
+  useEffect(() => {
+    const ids: string[] = [];
+    for (const group of mainGroups) {
+      for (const topic of group.topics) {
+        ids.push(topic.id);
+      }
+    }
+    if (doneGroup) {
+      for (const topic of doneGroup.topics) {
+        ids.push(topic.id);
+      }
+    }
+    setVisualTopicOrder(ids);
+  }, [mainGroups, doneGroup, setVisualTopicOrder]);
 
   // No context/view selected — early return after all hooks
   if (activeView === 'context' && !activeContextId) {

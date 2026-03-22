@@ -147,6 +147,8 @@ export interface Settings {
   warnWaitingCritical: number;
   obsidianMode: boolean;
   language: Language;
+  sidebarWidth: number;
+  detailPanelWidth: number;
 }
 
 // --- Switch Directory ---
