@@ -71,6 +71,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync version from git tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          echo "Setting package version to $TAG"
+          npm version "$TAG" --no-git-tag-version
+
       - name: Build app
         run: npm run build
 
