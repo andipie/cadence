@@ -72,6 +72,7 @@ jobs:
         run: npm ci
 
       - name: Sync version from git tag
+        shell: bash
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
           echo "Setting package version to $TAG"
