@@ -293,3 +293,104 @@ updated_at: "2026-03-01T10:00:00.000Z"
     expect(topic.direction).toBe('discuss');
   });
 });
+
+describe('roundtrip edge cases', () => {
+  it('YAML dates stay as strings, not Date objects', () => {
+    const content = `---
+id: date-test
+title: Date Test
+status: new
+due_date: "2026-03-25"
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/date-test.md', content);
+    expect(typeof topic.dueDate).toBe('string');
+    expect(topic.dueDate).toBe('2026-03-25');
+    expect(typeof topic.createdAt).toBe('string');
+  });
+
+  it('preserves special characters in title through roundtrip', () => {
+    const content = `---
+id: special-title
+title: "Topic: #1 & more"
+status: new
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/special-title.md', content);
+    expect(topic.title).toBe('Topic: #1 & more');
+    const serialized = serializeTopicFile(topic);
+    const reparsed = parseTopicFile('/topics/special-title.md', serialized);
+    expect(reparsed.title).toBe(topic.title);
+  });
+
+  it('preserves recurring fields through roundtrip', () => {
+    const topic = parseTopicFile('/topics/full-topic.md', FULL_TOPIC);
+    expect(topic.recurring).toBe(true);
+    expect(topic.recurringInterval).toBe('weekly');
+    expect(topic.recurringNext).toBe('2026-04-08');
+
+    const serialized = serializeTopicFile(topic);
+    const reparsed = parseTopicFile('/topics/full-topic.md', serialized);
+    expect(reparsed.recurring).toBe(topic.recurring);
+    expect(reparsed.recurringInterval).toBe(topic.recurringInterval);
+    expect(reparsed.recurringNext).toBe(topic.recurringNext);
+  });
+
+  it('handles empty note content (heading with no body)', () => {
+    const content = `---
+id: empty-note
+title: Empty Note
+status: new
+created_at: "2026-03-01T10:00:00.000Z"
+updated_at: "2026-03-01T10:00:00.000Z"
+---
+
+## 2026-03-15
+
+## 2026-03-01
+
+Some content here.
+`;
+    const topic = parseTopicFile('/topics/empty-note.md', content);
+    expect(topic.notes).toHaveLength(2);
+    expect(topic.notes[0].date).toBe('2026-03-15');
+    expect(topic.notes[0].content.trim()).toBe('');
+    expect(topic.notes[1].content).toContain('Some content here.');
+  });
+
+  it('preserves Obsidian tags field through roundtrip', () => {
+    const topic = parseTopicFile('/topics/obsidian-topic.md', UNKNOWN_FIELDS_TOPIC);
+    expect(topic._rawFrontmatter!['tags']).toEqual(['important']);
+    const serialized = serializeTopicFile(topic);
+    expect(serialized).toContain('tags:');
+    const reparsed = parseTopicFile('/topics/obsidian-topic.md', serialized);
+    expect(reparsed._rawFrontmatter!['tags']).toEqual(['important']);
+  });
+
+  it('handles missing updated_at gracefully', () => {
+    const content = `---
+id: no-updated
+title: No Updated
+status: new
+created_at: "2026-03-01T10:00:00.000Z"
+---
+`;
+    const topic = parseTopicFile('/topics/no-updated.md', content);
+    // Should not crash — uses createdAt as fallback or empty string
+    expect(topic.id).toBe('no-updated');
+    expect(topic.updatedAt).toBeTruthy();
+  });
+
+  it('generates bodyPreview from note content', () => {
+    const topic = parseTopicFile('/topics/full-topic.md', FULL_TOPIC);
+    expect(topic.bodyPreview).toBeTruthy();
+    // Preview comes from the first note's content, stripped of markdown
+    expect(typeof topic.bodyPreview).toBe('string');
+    expect(topic.bodyPreview!.length).toBeGreaterThan(0);
+    expect(topic.bodyPreview!.length).toBeLessThanOrEqual(200);
+  });
+});
