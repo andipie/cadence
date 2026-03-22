@@ -346,7 +346,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     if (topicCount > 0) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       state.showToast(t.toast.contextHasTopics(topicCount), { severity: 'warning' });
       return;
     }
@@ -449,10 +449,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       const filter = { ...get().freeViewFilter };
       await window.api.views.create({ name, filter });
       await get().loadSavedViews();
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.viewSaved);
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.viewSaveError;
       get().showToast(message, { severity: 'error' });
     }
@@ -463,7 +463,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await window.api.views.update(id, data);
       await get().loadSavedViews();
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.viewUpdateError;
       get().showToast(message, { severity: 'error' });
     }
@@ -477,10 +477,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (get().activeSavedViewId === id) {
         set({ activeSavedViewId: null });
       }
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.viewDeleted);
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.viewDeleteError;
       get().showToast(message, { severity: 'error' });
     }
@@ -504,10 +504,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const markdown = await window.api.agenda.generate(activeContextId);
       await navigator.clipboard.writeText(markdown);
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.agendaCopied);
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.agendaError;
       get().showToast(message, { severity: 'error' });
     }
@@ -523,7 +523,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const updated = await window.api.topics.addNote(selectedTopicId, content);
       set({ selectedTopic: updated });
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.noteAddError, { severity: 'error' });
     }
   },
@@ -535,7 +535,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const updated = await window.api.topics.updateNote(selectedTopicId, noteIndex, content);
       set({ selectedTopic: updated });
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.noteUpdateError, { severity: 'error' });
     }
   },
@@ -571,10 +571,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (selectedTopicId) {
         await get().loadSelectedTopic();
       }
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.undone);
     } catch {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.nothingToUndo, { severity: 'info' });
     }
   },
@@ -610,13 +610,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadSystemCounts();
       await get().loadGroups();
       // Show toast for undoable actions
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const desc = toastDescription(data, t);
       if (desc) {
         get().showToast(desc, { undoable: true });
       }
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicUpdateError;
       get().showToast(message, { severity: 'error' });
     }
@@ -629,10 +629,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.topicDeleted, { undoable: true });
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicDeleteError;
       get().showToast(message, { severity: 'error' });
     }
@@ -651,7 +651,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadGroups();
       set({ selectedTopicId: newTopic.id });
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicCreateError;
       get().showToast(message, { severity: 'error' });
     }
@@ -665,7 +665,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadGroups();
       set({ selectedTopicId: newTopic.id });
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicCreateError;
       get().showToast(message, { severity: 'error' });
     }
@@ -712,10 +712,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.bulkUpdated(selectedTopicIds.length));
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.bulkUpdateError;
       get().showToast(message, { severity: 'error' });
     }
@@ -729,10 +729,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.bulkDeleted(selectedTopicIds.length));
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.bulkDeleteError;
       get().showToast(message, { severity: 'error' });
     }
@@ -767,13 +767,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   duplicateTopicToContexts: async (topicId, contextIds) => {
     try {
       await window.api.topics.duplicate(topicId, contextIds);
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.topicCopied(contextIds.length));
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
     } catch (err) {
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicCopyError;
       get().showToast(message, { severity: 'error' });
     }
@@ -808,11 +808,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const updated = await window.api.settings.update(data);
       set({ settings: updated });
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.settingsSaved, { severity: 'info' });
     } catch (err) {
       console.error('[AppStore] Failed to update settings:', err);
-      const t = getTranslations(get().settings?.language ?? 'de');
+      const t = getTranslations(get().settings?.language ?? 'en');
       get().showToast(t.toast.settingsError, { severity: 'error' });
     }
   },
@@ -821,7 +821,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Data directory switching
   switchDataDir: async () => {
-    const t = getTranslations(get().settings?.language ?? 'de');
+    const t = getTranslations(get().settings?.language ?? 'en');
     const result = await window.api.settings.switchDir();
 
     if (!result.success) {
@@ -870,12 +870,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     get().loadSavedViews();
     get().recheckConflicts();
 
-    const tNew = getTranslations(result.settings.language ?? 'de');
+    const tNew = getTranslations(result.settings.language ?? 'en');
     get().showToast(tNew.settings.dataDirSwitched);
   },
 
   switchToKnownDir: async (dirPath: string) => {
-    const t = getTranslations(get().settings?.language ?? 'de');
+    const t = getTranslations(get().settings?.language ?? 'en');
     const result = await window.api.settings.switchToDir(dirPath);
 
     if (!result.success) {
@@ -916,12 +916,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     get().loadSavedViews();
     get().recheckConflicts();
 
-    const tNew = getTranslations(result.settings.language ?? 'de');
+    const tNew = getTranslations(result.settings.language ?? 'en');
     get().showToast(tNew.settings.switchDirSuccess);
   },
 
   setupAndSwitchDir: async (dirPath: string) => {
-    const t = getTranslations(get().settings?.language ?? 'de');
+    const t = getTranslations(get().settings?.language ?? 'en');
     const result = await window.api.startup.setupDir(dirPath, false);
 
     if (!result.success) {
@@ -967,7 +967,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     get().loadSavedViews();
     get().recheckConflicts();
 
-    const tNew = getTranslations(newSettings.language ?? 'de');
+    const tNew = getTranslations(newSettings.language ?? 'en');
     get().showToast(tNew.settings.dataDirSwitched);
   },
 

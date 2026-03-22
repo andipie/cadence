@@ -1,91 +1,91 @@
 # Cadence — Vision
 
-## Das Problem
+## The Problem
 
-Wissensarbeiter und Führungskräfte führen dutzende parallele Gespräche — 1:1s mit Direct Reports, Meetings mit Stakeholdern, Abstimmungen mit anderen Teams. In jedem dieser Kontexte gibt es offene Themen: Zusagen die eingehalten werden müssen, Entscheidungen die anstehen, Dinge auf die man wartet.
+Knowledge workers and managers carry dozens of parallel conversations — 1:1s with direct reports, meetings with stakeholders, alignment sessions with other teams. In each of these contexts, there are open topics: commitments that need to be honored, decisions that are pending, things that are being waited on.
 
-Diese Themen leben heute verstreut: in Notiz-Apps, in E-Mail-Drafts, auf Post-its, im Kopf. Das Ergebnis: Man geht in ein Meeting und vergisst die Hälfte. Man wartet auf eine Zulieferung und merkt erst nach Wochen, dass nichts kam. Man hat jemandem etwas zugesagt und erinnert sich zu spät.
+Today, these topics live scattered: in note-taking apps, in email drafts, on post-its, in people's heads. The result: you walk into a meeting and forget half of it. You're waiting for a deliverable and only realize weeks later that nothing arrived. You promised someone something and remember too late.
 
-Bestehende Tools lösen das Problem nicht:
+Existing tools don't solve this problem:
 
-- **To-Do-Apps** (Todoist, Things) sind aufgabenzentriert, nicht kontextzentriert. Sie beantworten "Was muss ich tun?" — aber nicht "Was muss ich mit Max besprechen?"
-- **Notiz-Apps** (Obsidian, Notion) sind zu frei. Man kann alles bauen, aber nichts erzwingt Struktur. Das führt zu Systemen die man erst pflegen muss, bevor man sie nutzen kann.
-- **Projektmanagement-Tools** (Jira, Asana) sind für Teams, nicht für persönliche Gesprächsführung. Sie sind zu schwergewichtig für "Muss ich bei Lisa nächste Woche nachfragen."
+- **To-do apps** (Todoist, Things) are task-centric, not context-centric. They answer "What do I need to do?" — but not "What do I need to discuss with Max?"
+- **Note-taking apps** (Obsidian, Notion) are too open-ended. You can build anything, but nothing enforces structure. This leads to systems you have to maintain before you can even use them.
+- **Project management tools** (Jira, Asana) are built for teams, not for personal conversation management. They are too heavyweight for "I need to follow up with Lisa next week."
 
-## Die Lösung
+## The Solution
 
-Cadence ist ein persönliches, kontextbasiertes Themen-Tracking-Tool. Es organisiert Themen nicht nach Projekten oder Deadlines, sondern nach den Menschen und Situationen, in denen sie relevant werden.
+Cadence is a personal, context-based topic tracking tool. It organizes topics not by projects or deadlines, but by the people and situations in which they become relevant.
 
-**Der Kern-Workflow:**
-1. Ein Thema fällt dir ein → Quick Capture, 2 Sekunden, fertig.
-2. Du gehst in ein Meeting / 1:1 → Du öffnest den Kontext und siehst sofort: Was muss ich ansprechen? Was muss ich liefern? Worauf warte ich?
-3. Im Gespräch → Du machst schnelle Updates direkt am Thema.
-4. Nach dem Gespräch → Thema erledigt, oder Wiedervorlage fürs nächste Mal.
+**The core workflow:**
+1. A topic comes to mind → Quick Capture, 2 seconds, done.
+2. You're heading into a meeting / 1:1 → You open the context and immediately see: What do I need to bring up? What do I need to deliver? What am I waiting on?
+3. During the conversation → You make quick updates directly on the topic.
+4. After the conversation → Topic completed, or scheduled for follow-up next time.
 
-## Designprinzipien
+## Design Principles
 
 ### 1. Speed over Completeness
 
-Lieber ein Thema mit nur einem Titel erfassen als gar nicht, weil das Formular zu viele Felder hat. Die Inbox fängt alles auf. Aufräumen kann man später.
+Better to capture a topic with just a title than not at all because the form has too many fields. The inbox catches everything. Tidying up can happen later.
 
 ### 2. Context is King
 
-Die primäre Navigation ist der Kontext, nicht die Aufgabe. "Ich bin jetzt bei Max" → alles Relevante erscheint. Das Tool denkt in Gesprächen, nicht in Aufgabenlisten.
+The primary navigation is the context, not the task. "I'm with Max right now" → everything relevant appears. The tool thinks in conversations, not in task lists.
 
 ### 3. Direction Matters
 
-Jedes Thema hat eine Richtung: Bringe ich etwas ein, liefere ich etwas, oder warte ich? Diese Dreiteilung strukturiert jedes Gespräch und macht sofort klar, wer am Zug ist.
+Every topic has a direction: Am I bringing something up, am I delivering something, or am I waiting? This three-way split structures every conversation and immediately makes clear who is up next.
 
 ### 4. Progressive Disclosure
 
-Die Themenliste zeigt das Minimum: Titel, Prio, Status. Details öffnen sich rechts. Updates sind chronologisch und scanbar. Kein Scrollen durch Walls of Text.
+The topic list shows the minimum: title, priority, status. Details open on the right. Updates are chronological and scannable. No scrolling through walls of text.
 
 ### 5. Filesystem First
 
-Daten gehören dem Nutzer, nicht der App. Markdown-Dateien mit Frontmatter sind das Format — lesbar ohne Tool, versionierbar mit Git, synchronisierbar mit jedem Cloud-Dienst, kompatibel mit Obsidian.
+Data belongs to the user, not the app. Markdown files with frontmatter are the format — readable without the tool, versionable with Git, syncable with any cloud service, compatible with Obsidian.
 
 ### 6. No Babysitting
 
-Das Tool braucht keine ständige Pflege. Es läuft auf dem Desktop, zeigt beim Öffnen was ansteht, und stört nicht wenn man es nicht braucht. Keine Push-Notifications, keine Gamification, keine Streaks.
+The tool requires no constant maintenance. It runs on the desktop, shows what's pending when opened, and doesn't intrude when not needed. No push notifications, no gamification, no streaks.
 
-## Zielgruppe
+## Target Audience
 
-Primär: Führungskräfte und Senior Engineers mit 3-15 direkten Kommunikationspartnern, die regelmäßige 1:1s und Meetings führen.
+Primary: Managers and senior engineers with 3-15 direct communication partners who hold regular 1:1s and meetings.
 
-Sekundär: Jeder Wissensarbeiter der kontextbezogen Themen tracken will — Projektleiter, Berater, Vertrieb.
+Secondary: Any knowledge worker who wants to track topics by context — project leads, consultants, sales professionals.
 
-**Nicht die Zielgruppe:** Teams die ein geteiltes Aufgabenmanagement brauchen. Cadence ist ein persönliches Tool, kein Kollaborations-Tool.
+**Not the target audience:** Teams that need shared task management. Cadence is a personal tool, not a collaboration tool.
 
-## Abgrenzung
+## Differentiation
 
-| Aspekt | Cadence | To-Do-App | Notiz-App | Projekt-Tool |
+| Aspect | Cadence | To-Do App | Note-Taking App | Project Tool |
 |--------|-------------|-----------|-----------|-------------|
-| Organisiert nach | Kontext (Person/Meeting) | Projekt/Liste | Frei | Projekt/Sprint |
-| Kernfrage | "Was bespreche ich mit X?" | "Was muss ich tun?" | "Was habe ich notiert?" | "Wer macht was bis wann?" |
-| Capture-Speed | < 2 Sekunden | ~5 Sekunden | ~10 Sekunden | ~30 Sekunden |
-| Datenformat | Markdown (offen) | Proprietär | Markdown (teilw.) | Proprietär |
-| Kollaboration | Nein (persönlich) | Teilweise | Teilweise | Ja |
-| Lernkurve | Minimal | Niedrig | Hoch | Hoch |
+| Organized by | Context (Person/Meeting) | Project/List | Freeform | Project/Sprint |
+| Core question | "What do I discuss with X?" | "What do I need to do?" | "What did I note down?" | "Who does what by when?" |
+| Capture speed | < 2 seconds | ~5 seconds | ~10 seconds | ~30 seconds |
+| Data format | Markdown (open) | Proprietary | Markdown (partial) | Proprietary |
+| Collaboration | No (personal) | Partial | Partial | Yes |
+| Learning curve | Minimal | Low | High | High |
 
-## Erfolgskriterien
+## Success Criteria
 
-Cadence ist erfolgreich, wenn:
+Cadence is successful when:
 
-1. **Quick Capture funktioniert.** Vom Gedanken zum erfassten Thema vergehen weniger als 3 Sekunden. Kein Grund, jemals zu sagen "Das merke ich mir einfach."
+1. **Quick Capture works.** From thought to captured topic takes less than 3 seconds. No reason to ever say "I'll just remember that."
 
-2. **Meetings produktiver werden.** Man geht vorbereitet rein (alle Themen auf einen Blick), verpasst nichts (Follow-Ups sind sichtbar), und vergisst keine Nachverfolgung (Wiedervorlage).
+2. **Meetings become more productive.** You walk in prepared (all topics at a glance), miss nothing (follow-ups are visible), and forget no follow-through (follow-up scheduling).
 
-3. **Nichts fällt durch.** Themen bei denen man auf jemanden wartet, werden sichtbar — mit Wartezeit. "Wartet seit 14 Tagen" ist ein klares Signal zum Nachhaken.
+3. **Nothing falls through the cracks.** Topics where you're waiting on someone become visible — with wait time. "Waiting for 14 days" is a clear signal to follow up.
 
-4. **Die Daten überleben das Tool.** Wenn Cadence morgen nicht mehr existiert, hat der Nutzer einen Ordner mit lesbaren Markdown-Dateien die alles enthalten.
+4. **The data outlives the tool.** If Cadence ceases to exist tomorrow, the user has a folder of readable Markdown files that contain everything.
 
-## Langfrist-Vision
+## Long-Term Vision
 
-Phase 1-3 sind das Fundament. Darüber hinaus gibt es Richtungen, die bewusst noch nicht geplant, aber denkbar sind:
+Phases 1-3 are the foundation. Beyond that, there are directions that are deliberately not yet planned but conceivable:
 
-- **Statistiken:** "Wie viele Themen habe ich in den letzten 30 Tagen mit Lisa abgeräumt?" — Einblick in die eigene Gesprächseffizienz.
-- **Templates:** Vordefinierte Themen-Sets für bestimmte Meeting-Typen (Sprint Retro Fragen, 1:1 Standardpunkte).
-- **Kalender-Integration:** Automatisch den richtigen Kontext öffnen wenn ein Meeting im Kalender startet. Bewusst nicht in Phase 1-3, weil es Komplexität einführt die dem "No Babysitting"-Prinzip widerspricht.
-- **Mobile Companion:** Leichtgewichtige Mobile-App für Read-Only + Quick Capture. Bis dahin: Obsidian Mobile als Brücke.
+- **Statistics:** "How many topics have I resolved with Lisa in the last 30 days?" — insight into your own conversation efficiency.
+- **Templates:** Predefined topic sets for specific meeting types (sprint retro questions, 1:1 standard items).
+- **Calendar integration:** Automatically open the right context when a meeting starts in the calendar. Deliberately not in phases 1-3 because it introduces complexity that contradicts the "No Babysitting" principle.
+- **Mobile companion:** Lightweight mobile app for read-only + Quick Capture. Until then: Obsidian Mobile as a bridge.
 
-Diese Richtungen werden nur verfolgt, wenn sie die Kernprinzipien nicht verwässern.
+These directions will only be pursued if they don't dilute the core principles.

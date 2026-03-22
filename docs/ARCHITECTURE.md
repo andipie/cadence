@@ -1,8 +1,8 @@
 # Cadence — Architecture
 
-## 1. Überblick
+## 1. Overview
 
-Cadence ist eine Electron-Anwendung mit React-Frontend. Der gesamte Stack ist TypeScript. Daten liegen als Markdown-Dateien im Filesystem, ein SQLite-Index dient als Read-Cache für schnelle Abfragen.
+Cadence is an Electron application with a React frontend. The entire stack is TypeScript. Data is stored as Markdown files in the filesystem, and a SQLite index serves as a read cache for fast queries.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -27,11 +27,11 @@ Cadence ist eine Electron-Anwendung mit React-Frontend. Der gesamte Stack ist Ty
 └─────────────────────────────────────────────────┘
 ```
 
-**Kernprinzip:** Das Filesystem ist die einzige Source of Truth. SQLite ist ein jederzeit wegwerfbarer Read-Cache. Jede Schreiboperation geht an die Markdown-Datei, der File-Watcher aktualisiert den Cache.
+**Core Principle:** The filesystem is the single source of truth. SQLite is a disposable read cache that can be rebuilt at any time. Every write operation targets the Markdown file, and the file watcher updates the cache.
 
 ---
 
-## 2. Projektstruktur
+## 2. Project Structure
 
 ```
 cadence/
@@ -43,68 +43,68 @@ cadence/
 │
 ├── src/
 │   ├── main/                      # Electron Main Process
-│   │   ├── index.ts               # App-Entry, Window-Management
-│   │   ├── ipc/                   # IPC-Handler Registrierung
-│   │   │   ├── index.ts           # Alle Handler exportieren
-│   │   │   ├── topics.ts          # Topic CRUD Operationen
-│   │   │   ├── contexts.ts        # Kontext CRUD Operationen
-│   │   │   ├── views.ts           # Gespeicherte Views CRUD
-│   │   │   └── system.ts          # Settings, Pfade, Export
+│   │   ├── index.ts               # App entry, window management
+│   │   ├── ipc/                   # IPC handler registration
+│   │   │   ├── index.ts           # Export all handlers
+│   │   │   ├── topics.ts          # Topic CRUD operations
+│   │   │   ├── contexts.ts        # Context CRUD operations
+│   │   │   ├── views.ts           # Saved views CRUD
+│   │   │   └── system.ts          # Settings, paths, export
 │   │   │
-│   │   ├── store/                 # Datenzugriff
-│   │   │   ├── file-store.ts      # Markdown lesen/schreiben/löschen
-│   │   │   ├── index-db.ts        # SQLite Index (Erstellen, Abfragen, Rebuild)
-│   │   │   ├── file-watcher.ts    # chokidar Watcher, triggert Index-Updates
-│   │   │   └── attachment-store.ts # Bild-Attachments verwalten
+│   │   ├── store/                 # Data access
+│   │   │   ├── file-store.ts      # Markdown read/write/delete
+│   │   │   ├── index-db.ts        # SQLite index (create, query, rebuild)
+│   │   │   ├── file-watcher.ts    # chokidar watcher, triggers index updates
+│   │   │   └── attachment-store.ts # Image attachment management
 │   │   │
-│   │   ├── services/              # Business-Logik
-│   │   │   ├── topic-service.ts   # Topic-Operationen (inkl. Recurring-Logik)
-│   │   │   ├── context-service.ts # Kontext-Operationen
-│   │   │   ├── search-service.ts  # Volltextsuche über SQLite FTS5
-│   │   │   ├── agenda-service.ts  # Agenda-Markdown-Generierung
-│   │   │   ├── slug-service.ts    # Titel → Slug Konvertierung, Datei-Umbenennung
-│   │   │   ├── undo-service.ts    # Letzte Aktion speichern und rückgängig machen
-│   │   │   └── conflict-service.ts # Sync-Konflikt-Erkennung
+│   │   ├── services/              # Business logic
+│   │   │   ├── topic-service.ts   # Topic operations (incl. recurring logic)
+│   │   │   ├── context-service.ts # Context operations
+│   │   │   ├── search-service.ts  # Full-text search via SQLite FTS5
+│   │   │   ├── agenda-service.ts  # Agenda Markdown generation
+│   │   │   ├── slug-service.ts    # Title → slug conversion, file renaming
+│   │   │   ├── undo-service.ts    # Store and revert last action
+│   │   │   └── conflict-service.ts # Sync conflict detection
 │   │   │
-│   │   ├── global-hotkey.ts       # Global Shortcut Registrierung
-│   │   └── quick-capture-window.ts # Separates kleines Capture-Fenster
+│   │   ├── global-hotkey.ts       # Global shortcut registration
+│   │   └── quick-capture-window.ts # Separate small capture window
 │   │
 │   ├── renderer/                  # React Frontend
 │   │   ├── index.html
-│   │   ├── index.tsx              # React-Entry
-│   │   ├── App.tsx                # Root-Komponente, Layout
+│   │   ├── index.tsx              # React entry
+│   │   ├── App.tsx                # Root component, layout
 │   │   │
 │   │   ├── components/
 │   │   │   ├── layout/
-│   │   │   │   ├── ThreePanel.tsx       # Hauptlayout (3 Spalten)
-│   │   │   │   ├── TopBar.tsx           # Header mit Badges und Suche
-│   │   │   │   └── CommandPalette.tsx   # ⌘K Globale Suche
+│   │   │   │   ├── ThreePanel.tsx       # Main layout (3 columns)
+│   │   │   │   ├── TopBar.tsx           # Header with badges and search
+│   │   │   │   └── CommandPalette.tsx   # ⌘K global search
 │   │   │   │
 │   │   │   ├── context-nav/
-│   │   │   │   ├── ContextNav.tsx       # Linkes Panel komplett
-│   │   │   │   ├── ContextGroup.tsx     # Gruppe mit Kontexten
-│   │   │   │   ├── ContextItem.tsx      # Einzelner Kontext-Eintrag
-│   │   │   │   ├── SystemViews.tsx      # Inbox, Überfällig
-│   │   │   │   ├── SavedViews.tsx       # Collapsible gespeicherte Views
-│   │   │   │   └── ContextForm.tsx      # Kontext anlegen/bearbeiten
+│   │   │   │   ├── ContextNav.tsx       # Left panel complete
+│   │   │   │   ├── ContextGroup.tsx     # Group with contexts
+│   │   │   │   ├── ContextItem.tsx      # Single context entry
+│   │   │   │   ├── SystemViews.tsx      # Inbox, Overdue
+│   │   │   │   ├── SavedViews.tsx       # Collapsible saved views
+│   │   │   │   └── ContextForm.tsx      # Create/edit context
 │   │   │   │
 │   │   │   ├── topic-list/
-│   │   │   │   ├── TopicList.tsx        # Mittleres Panel komplett
-│   │   │   │   ├── TopicGroup.tsx       # Gruppenkopf (Ansprechen/Liefern/Warten/Erledigt)
-│   │   │   │   ├── TopicRow.tsx         # Einzelne Zeile mit Inline-Edit
-│   │   │   │   ├── TopicBadge.tsx       # Prio/Status/Richtung Badge
-│   │   │   │   ├── QuickAdd.tsx         # Inline Quick-Add am unteren Rand
-│   │   │   │   ├── BulkActions.tsx      # Toolbar bei Multi-Select
-│   │   │   │   └── FilterBar.tsx        # Filter-UI für Free View
+│   │   │   │   ├── TopicList.tsx        # Middle panel complete
+│   │   │   │   ├── TopicGroup.tsx       # Group header (Bring Up/Deliver/Waiting/Done)
+│   │   │   │   ├── TopicRow.tsx         # Single row with inline edit
+│   │   │   │   ├── TopicBadge.tsx       # Priority/Status/Direction badge
+│   │   │   │   ├── QuickAdd.tsx         # Inline quick-add at bottom
+│   │   │   │   ├── BulkActions.tsx      # Toolbar for multi-select
+│   │   │   │   └── FilterBar.tsx        # Filter UI for free view
 │   │   │   │
 │   │   │   ├── detail/
-│   │   │   │   ├── DetailPanel.tsx      # Rechtes Panel komplett
-│   │   │   │   ├── MetadataGrid.tsx     # Inline-editierbare Felder
-│   │   │   │   ├── ContextTags.tsx      # Kontext-Tags mit Add/Remove
-│   │   │   │   ├── NotesFeed.tsx        # Chronologischer Notiz-Feed
-│   │   │   │   ├── NoteEntry.tsx        # Einzelnes Update mit Datum
-│   │   │   │   ├── NoteEditor.tsx       # TipTap WYSIWYG Editor
-│   │   │   │   └── ActionFooter.tsx     # Erledigt/Wiedervorlage/Löschen
+│   │   │   │   ├── DetailPanel.tsx      # Right panel complete
+│   │   │   │   ├── MetadataGrid.tsx     # Inline-editable fields
+│   │   │   │   ├── ContextTags.tsx      # Context tags with add/remove
+│   │   │   │   ├── NotesFeed.tsx        # Chronological notes feed
+│   │   │   │   ├── NoteEntry.tsx        # Single update with date
+│   │   │   │   ├── NoteEditor.tsx       # TipTap WYSIWYG editor
+│   │   │   │   └── ActionFooter.tsx     # Done/Follow-up/Delete
 │   │   │   │
 │   │   │   └── shared/
 │   │   │       ├── Badge.tsx
@@ -114,37 +114,37 @@ cadence/
 │   │   │       ├── ConfirmDialog.tsx
 │   │   │       ├── EmptyState.tsx
 │   │   │       ├── Checkbox.tsx
-│   │   │       ├── Toast.tsx             # Nicht-blockierende Benachrichtigungen (Info/Warnung/Fehler)
-│   │   │       └── UndoSnackbar.tsx      # "Aktion — [Rückgängig]" nach Statusänderungen
+│   │   │       ├── Toast.tsx             # Non-blocking notifications (Info/Warning/Error)
+│   │   │       └── UndoSnackbar.tsx      # "Action — [Undo]" after status changes
 │   │   │
 │   │   ├── hooks/
-│   │   │   ├── useTopics.ts          # Topic-Daten laden, filtern, sortieren
-│   │   │   ├── useContexts.ts        # Kontextliste, aktiver Kontext
-│   │   │   ├── useViews.ts           # Gespeicherte Views
-│   │   │   ├── useKeyboard.ts        # Keyboard-Shortcut Handling
-│   │   │   ├── useDragDrop.ts        # Drag & Drop Sortierung
-│   │   │   └── useIpc.ts             # Wrapper für Electron IPC Calls
+│   │   │   ├── useTopics.ts          # Load, filter, sort topic data
+│   │   │   ├── useContexts.ts        # Context list, active context
+│   │   │   ├── useViews.ts           # Saved views
+│   │   │   ├── useKeyboard.ts        # Keyboard shortcut handling
+│   │   │   ├── useDragDrop.ts        # Drag & drop sorting
+│   │   │   └── useIpc.ts             # Wrapper for Electron IPC calls
 │   │   │
 │   │   ├── store/
-│   │   │   └── app-store.ts          # Zustand (zustand): UI-State, aktiver Kontext, Selection
+│   │   │   └── app-store.ts          # Zustand (zustand): UI state, active context, selection
 │   │   │
 │   │   └── styles/
-│   │       └── globals.css           # Tailwind imports, Custom Properties
+│   │       └── globals.css           # Tailwind imports, custom properties
 │   │
-│   ├── shared/                    # Shared zwischen Main und Renderer
-│   │   ├── types.ts               # Topic, Context, View, Filter Interfaces
-│   │   ├── constants.ts           # Enums, Defaults
-│   │   ├── ipc-channels.ts        # IPC Channel-Namen als Constants
-│   │   └── markdown.ts            # Frontmatter Parser/Serializer
+│   ├── shared/                    # Shared between Main and Renderer
+│   │   ├── types.ts               # Topic, Context, View, Filter interfaces
+│   │   ├── constants.ts           # Enums, defaults
+│   │   ├── ipc-channels.ts        # IPC channel names as constants
+│   │   └── markdown.ts            # Frontmatter parser/serializer
 │   │
 │   └── preload/
-│       └── index.ts               # contextBridge API Exposition
+│       └── index.ts               # contextBridge API exposition
 │
-├── resources/                     # App-Icons, native Assets
+├── resources/                     # App icons, native assets
 │   ├── icon.png
 │   └── tray-icon.png
 │
-└── data/                          # Default-Datenverzeichnis (konfigurierbar)
+└── data/                          # Default data directory (configurable)
     ├── topics/
     ├── attachments/
     ├── contexts/
@@ -155,31 +155,31 @@ cadence/
 
 ---
 
-## 3. Prozessarchitektur
+## 3. Process Architecture
 
 ### 3.1 Main Process (Node.js)
 
-Verantwortlich für:
-- Dateisystem-Operationen (Lesen, Schreiben, Watchen)
-- SQLite-Index-Management
-- Global Hotkey Registrierung
-- Quick-Capture-Window Management
-- IPC-Handler für alle Datenoperationen
+Responsible for:
+- Filesystem operations (reading, writing, watching)
+- SQLite index management
+- Global hotkey registration
+- Quick capture window management
+- IPC handlers for all data operations
 
-**Kein Business-State im Main Process.** Der Main Process ist ein reiner Daten-Service. UI-State (aktiver Kontext, Selection, Filter) lebt ausschließlich im Renderer.
+**No business state in the Main Process.** The Main Process is a pure data service. UI state (active context, selection, filters) lives exclusively in the Renderer.
 
 ### 3.2 Renderer Process (React)
 
-Verantwortlich für:
-- Gesamte UI-Darstellung
-- UI-State-Management (zustand)
-- Keyboard-Shortcut-Handling (lokale Shortcuts)
-- TipTap Editor-Instanzen
-- Drag & Drop
+Responsible for:
+- All UI rendering
+- UI state management (zustand)
+- Keyboard shortcut handling (local shortcuts)
+- TipTap editor instances
+- Drag & drop
 
-### 3.3 IPC-Kommunikation
+### 3.3 IPC Communication
 
-Alle Datenoperationen laufen über typisierte IPC-Channels:
+All data operations run through typed IPC channels:
 
 ```typescript
 // shared/ipc-channels.ts
@@ -229,7 +229,7 @@ export const IPC = {
 } as const;
 ```
 
-**Pattern:** Renderer ruft `window.api.topics.list(filter)` → preload bridge → Main Process IPC Handler → Service → FileStore/IndexDB → Response zurück.
+**Pattern:** Renderer calls `window.api.topics.list(filter)` → preload bridge → Main Process IPC handler → Service → FileStore/IndexDB → response back.
 
 ### 3.4 Preload / Context Bridge
 
@@ -285,48 +285,48 @@ contextBridge.exposeInMainWorld('api', {
 
 ---
 
-## 4. Datenfluss im Detail
+## 4. Data Flow in Detail
 
-### 4.1 Lesen (Kontextansicht öffnen)
+### 4.1 Reading (Opening a Context View)
 
 ```
-User klickt Kontext "Max Mustermann"
+User clicks context "Max Mustermann"
   → Renderer: useTopics({ contexts: ['max-mustermann'], status: ['neu', 'follow-up'] })
     → IPC: topics:list(filter)
-      → Main: IndexDB.query(filter)    // SQL gegen SQLite
+      → Main: IndexDB.query(filter)    // SQL query against SQLite
         → SELECT * FROM topics WHERE ... ORDER BY ...
-      ← Topic[] zurück
-    ← Topic[] an Renderer
-  → React rendert TopicList gruppiert nach direction
+      ← Topic[] returned
+    ← Topic[] to Renderer
+  → React renders TopicList grouped by direction
 ```
 
-### 4.2 Schreiben (Prio ändern)
+### 4.2 Writing (Changing Priority)
 
 ```
-User klickt Prio-Badge → wählt "Hoch"
+User clicks priority badge → selects "Hoch"
   → Renderer: api.topics.update(id, { priority: 'hoch' })
     → IPC: topics:update
       → Main: TopicService.update(id, { priority: 'hoch' })
-        → FileStore.read(id)              // Markdown laden
-        → Frontmatter priority ändern
-        → FileStore.write(id, content)     // Markdown speichern
-        → File-Watcher erkennt Änderung
-        → IndexDB.updateTopic(topic)       // SQLite updaten
-      ← Updated Topic zurück
-    ← Updated Topic an Renderer
-  → React aktualisiert TopicRow
+        → FileStore.read(id)              // Load Markdown
+        → Modify frontmatter priority
+        → FileStore.write(id, content)     // Save Markdown
+        → File watcher detects change
+        → IndexDB.updateTopic(topic)       // Update SQLite
+      ← Updated Topic returned
+    ← Updated Topic to Renderer
+  → React updates TopicRow
 ```
 
-### 4.3 Externer Change (Obsidian editiert Datei)
+### 4.3 External Change (Obsidian Edits a File)
 
 ```
-Obsidian ändert Notizteil einer Topic-Datei
-  → chokidar erkennt 'change' Event
+Obsidian modifies the notes section of a topic file
+  → chokidar detects 'change' event
     → FileStore.read(id)
-    → Frontmatter + Body parsen
+    → Parse frontmatter + body
     → IndexDB.updateTopic(parsedTopic)
-    → IPC Event: FILE_CHANGED an Renderer
-      → Renderer aktualisiert UI wenn Topic sichtbar
+    → IPC event: FILE_CHANGED to Renderer
+      → Renderer updates UI if topic is visible
 ```
 
 ---
@@ -345,12 +345,12 @@ CREATE TABLE topics (
   created_at    TEXT NOT NULL,           -- ISO datetime
   updated_at    TEXT NOT NULL,           -- ISO datetime
   completed_at  TEXT,                    -- ISO datetime
-  sort_order    REAL,                    -- Für manuelle Sortierung
+  sort_order    REAL,                    -- For manual sorting
   recurring     INTEGER DEFAULT 0,       -- Boolean
   recurring_interval TEXT,               -- weekly/biweekly/monthly/quarterly
   recurring_next TEXT,                   -- ISO date
-  body_preview  TEXT,                    -- Erstes Update gekürzt für Suche/Anzeige
-  file_path     TEXT NOT NULL            -- Relativer Pfad zur .md Datei
+  body_preview  TEXT,                    -- First update truncated for search/display
+  file_path     TEXT NOT NULL            -- Relative path to .md file
 );
 
 CREATE TABLE topic_contexts (
@@ -359,7 +359,7 @@ CREATE TABLE topic_contexts (
   PRIMARY KEY (topic_id, context_id)
 );
 
--- Volltext-Index für Suche
+-- Full-text index for search
 CREATE VIRTUAL TABLE topics_fts USING fts5(
   title,
   body_text,
@@ -367,7 +367,7 @@ CREATE VIRTUAL TABLE topics_fts USING fts5(
   content_rowid=rowid
 );
 
--- Indizes für häufige Abfragen
+-- Indexes for frequent queries
 CREATE INDEX idx_topics_status ON topics(status);
 CREATE INDEX idx_topics_priority ON topics(priority);
 CREATE INDEX idx_topics_direction ON topics(direction);
@@ -375,11 +375,11 @@ CREATE INDEX idx_topics_due_date ON topics(due_date);
 CREATE INDEX idx_topic_contexts_context ON topic_contexts(context_id);
 ```
 
-**Wichtig:** Der SQLite-Index enthält keine Daten die nicht aus dem Filesystem reproduzierbar sind. `body_preview` ist ein Cache des ersten Update-Blocks. Die vollständigen Notizen werden bei Bedarf direkt aus der Markdown-Datei gelesen.
+**Important:** The SQLite index contains no data that cannot be reproduced from the filesystem. `body_preview` is a cache of the first update block. Complete notes are read directly from the Markdown file when needed.
 
 ---
 
-## 6. Kern-Typen
+## 6. Core Types
 
 ```typescript
 // shared/types.ts
@@ -398,7 +398,7 @@ export interface Topic {
   status: TopicStatus;
   priority: TopicPriority;
   direction: TopicDirection;
-  contexts: string[];           // Context-IDs
+  contexts: string[];           // Context IDs
   dueDate: string | null;       // ISO date
   followUpDate: string | null;  // ISO date
   createdAt: string;            // ISO datetime
@@ -408,17 +408,17 @@ export interface Topic {
   recurring: boolean;
   recurringInterval: RecurringInterval | null;
   recurringNext: string | null;
-  bodyPreview: string | null;   // Aus Index-Cache
+  bodyPreview: string | null;   // From index cache
   filePath: string;
 }
 
 export interface TopicDetail extends Topic {
-  notes: NoteEntry[];           // Vollständige Notizen aus Datei
+  notes: NoteEntry[];           // Complete notes from file
 }
 
 export interface NoteEntry {
   date: string;                 // ISO date
-  content: string;              // Markdown-String
+  content: string;              // Markdown string
 }
 
 export interface CreateTopicInput {
@@ -447,8 +447,8 @@ export interface Context {
   id: string;
   name: string;
   type: ContextType;
-  group: string | null;         // Group-ID
-  topicCount?: number;          // Berechnet aus Index
+  group: string | null;         // Group ID
+  topicCount?: number;          // Computed from index
 }
 
 export interface ContextGroup {
@@ -468,7 +468,7 @@ export interface TopicFilter {
   dueBefore?: string;
   dueAfter?: string;
   search?: string;
-  inbox?: boolean;              // contexts leer
+  inbox?: boolean;              // contexts empty
   groupBy?: 'context' | 'priority' | 'direction' | 'status' | 'none';
   sortBy?: 'priority' | 'due_date' | 'created_at' | 'updated_at';
 }
@@ -488,8 +488,8 @@ export interface Settings {
   defaultPriority: TopicPriority;
   confirmDelete: boolean;
   confirmComplete: boolean;
-  warnWaitingDays: number;      // Ab wann Amber (Default: 7)
-  warnWaitingCritical: number;  // Ab wann Rot (Default: 14)
+  warnWaitingDays: number;      // When to show amber (default: 7)
+  warnWaitingCritical: number;  // When to show red (default: 14)
   obsidianMode: boolean;
 }
 
@@ -497,9 +497,9 @@ export interface Settings {
 export interface UndoAction {
   type: 'update' | 'delete' | 'create';
   topicId: string;
-  description: string;          // z.B. "Status → Erledigt" — wird im Toast angezeigt
-  previousFileContent: string;  // Vollständiger Datei-Inhalt vor der Änderung
-  previousFilePath: string;     // Pfad vor der Änderung (relevant bei Titel-Rename)
+  description: string;          // e.g. "Status → Erledigt" — displayed in toast
+  previousFileContent: string;  // Complete file content before the change
+  previousFilePath: string;     // Path before the change (relevant for title rename)
 }
 
 // --- Error ---
@@ -507,82 +507,82 @@ export type AppErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
 
 export interface AppError {
   severity: AppErrorSeverity;
-  message: string;              // User-facing Nachricht (Deutsch)
-  detail?: string;              // Technisches Detail (für Debugging)
-  filePath?: string;            // Betroffene Datei, falls relevant
-  autoDismiss?: boolean;        // true = verschwindet nach 5s (Default für info)
+  message: string;              // User-facing message (German)
+  detail?: string;              // Technical detail (for debugging)
+  filePath?: string;            // Affected file, if relevant
+  autoDismiss?: boolean;        // true = disappears after 5s (default for info)
 }
 
 // --- Slug ---
-// Utility: Titel → Dateiname-Slug
+// Utility: Title → filename slug
 // "PROFINET Testkonzept Review" → "profinet-testkonzept-review"
-// Regeln: lowercase, Umlaute auflösen (ä→ae, ö→oe, ü→ue, ß→ss),
-// Sonderzeichen entfernen, Leerzeichen → Bindestriche, Mehrfach-Bindestriche → einfach
+// Rules: lowercase, resolve umlauts (ä→ae, ö→oe, ü→ue, ß→ss),
+// remove special characters, spaces → hyphens, deduplicate hyphens
 ```
 
 ---
 
 ## 7. Frontmatter Parser
 
-Das Herzstück der Datenpersistenz. Konvertiert zwischen Markdown-Dateien und Topic-Objekten.
+The core of data persistence. Converts between Markdown files and Topic objects.
 
 ```typescript
-// shared/markdown.ts — Konzept
+// shared/markdown.ts — Concept
 
-// Parsen: Datei → Topic
+// Parse: File → Topic
 function parseTopicFile(filePath: string, content: string): TopicDetail {
-  // 1. YAML Frontmatter extrahieren (zwischen --- Markern)
-  // 2. Frontmatter-Felder auf Topic-Interface mappen
-  // 3. Body nach ## YYYY-MM-DD Headers splitten → NoteEntry[]
-  // 4. Neuestes NoteEntry als bodyPreview extrahieren
+  // 1. Extract YAML frontmatter (between --- markers)
+  // 2. Map frontmatter fields to Topic interface
+  // 3. Split body by ## YYYY-MM-DD headers → NoteEntry[]
+  // 4. Extract newest NoteEntry as bodyPreview
 }
 
-// Serialisieren: Topic → Datei-Inhalt
+// Serialize: Topic → file content
 function serializeTopicFile(topic: TopicDetail): string {
-  // 1. Frontmatter als YAML zwischen --- Marker
-  // 2. Body: NoteEntries als ## Datum + Content, neueste oben
+  // 1. Frontmatter as YAML between --- markers
+  // 2. Body: NoteEntries as ## Date + Content, newest on top
 }
 
-// Einzelnes Feld updaten (ohne Body neu zu schreiben)
+// Update a single field (without rewriting the body)
 function updateFrontmatterField(
   content: string,
   field: string,
   value: unknown
 ): string {
-  // Nur Frontmatter-Bereich modifizieren, Body unangetastet lassen
+  // Only modify the frontmatter section, leave body untouched
 }
 
-// Neues Update einfügen
+// Insert a new update
 function addNoteEntry(content: string, noteContent: string): string {
-  // Neuen ## YYYY-MM-DD Block oben im Body einfügen
+  // Insert new ## YYYY-MM-DD block at the top of the body
 }
 
-// Titel → Dateiname-Slug
+// Title → filename slug
 function titleToSlug(title: string): string {
   // "PROFINET Testkonzept Review" → "profinet-testkonzept-review"
-  // Umlaute: ä→ae, ö→oe, ü→ue, ß→ss
-  // Sonderzeichen entfernen, Spaces → Hyphens, deduplicate Hyphens
+  // Umlauts: ä→ae, ö→oe, ü→ue, ß→ss
+  // Remove special characters, spaces → hyphens, deduplicate hyphens
 }
 
-// Datei umbenennen bei Titel-Änderung
+// Rename file on title change
 function renameTopicFile(oldSlug: string, newSlug: string): void {
-  // 1. Prüfen ob neuer Slug als Datei bereits existiert (→ Suffix anhängen: -2, -3, ...)
-  // 2. Markdown-Datei umbenennen
-  // 3. Attachments-Ordner umbenennen (falls vorhanden)
-  // 4. Index aktualisiert sich automatisch über File-Watcher
+  // 1. Check if new slug already exists as file (→ append suffix: -2, -3, ...)
+  // 2. Rename Markdown file
+  // 3. Rename attachments folder (if present)
+  // 4. Index updates automatically via file watcher
 }
 ```
 
-**Bibliothek:** `gray-matter` für Frontmatter-Parsing, bewährt und stabil.
+**Library:** `gray-matter` for frontmatter parsing, proven and stable.
 
 ---
 
 ## 8. State Management (Renderer)
 
-**zustand** als State-Library — leichtgewichtig, TypeScript-first, kein Boilerplate.
+**zustand** as state library — lightweight, TypeScript-first, no boilerplate.
 
 ```typescript
-// renderer/store/app-store.ts — Konzept
+// renderer/store/app-store.ts — Concept
 
 interface AppState {
   // Navigation
@@ -591,7 +591,7 @@ interface AppState {
   activeSavedViewId: string | null;
   selectedTopicId: string | null;
 
-  // Daten (aus IPC geladen)
+  // Data (loaded via IPC)
   topics: Topic[];
   contexts: Context[];
   groups: ContextGroup[];
@@ -619,30 +619,30 @@ interface AppState {
 
 ---
 
-## 9. Quick-Capture-Window
+## 9. Quick Capture Window
 
-Separates Electron `BrowserWindow` — minimalistisch, kein Chrome.
+Separate Electron `BrowserWindow` — minimalist, no chrome.
 
 ```
 ┌──────────────────────────────────┐
-│ Neues Thema                      │
+│ New Topic                        │
 │ ┌──────────────────────────────┐ │
-│ │ Titel eingeben...            │ │
+│ │ Enter title...               │ │
 │ └──────────────────────────────┘ │
 │ ┌──────────────────────────────┐ │
-│ │ Kontext (optional)     ▼    │ │
+│ │ Context (optional)     ▼    │ │
 │ └──────────────────────────────┘ │
 │                    [Enter = OK]  │
 └──────────────────────────────────┘
 ```
 
-- Öffnet über Global Hotkey
-- Frameless Window, zentriert, ~400x150px
-- Titel-Feld hat Autofokus
-- Kontext-Feld mit Typeahead (optional)
-- Enter = Speichern + Schließen
-- Escape = Abbrechen + Schließen
-- Wenn kein Kontext gewählt → Inbox
+- Opens via global hotkey
+- Frameless window, centered, ~400x150px
+- Title field has autofocus
+- Context field with typeahead (optional)
+- Enter = save + close
+- Escape = cancel + close
+- If no context selected → Inbox
 
 ---
 
@@ -662,37 +662,37 @@ win:
 ```
 
 **Development:**
-- `npm run dev` — Vite Dev Server + Electron in Watch-Mode
-- Hot Reload für Renderer, Auto-Restart für Main Process
+- `npm run dev` — Vite dev server + Electron in watch mode
+- Hot reload for Renderer, auto-restart for Main Process
 
 **Production Build:**
-- `npm run build` — Vite Build + electron-builder
-- Outputs: `.dmg` (Mac), `.exe` Installer + Portable (Win)
+- `npm run build` — Vite build + electron-builder
+- Outputs: `.dmg` (Mac), `.exe` installer + portable (Win)
 
 ---
 
-## 11. Abhängigkeiten (Kern)
+## 11. Dependencies (Core)
 
-| Paket | Zweck | Prozess |
-|-------|-------|---------|
+| Package | Purpose | Process |
+|---------|---------|---------|
 | `electron` | Runtime | - |
-| `react`, `react-dom` | UI Framework | Renderer |
-| `typescript` | Typsicherheit | Beide |
+| `react`, `react-dom` | UI framework | Renderer |
+| `typescript` | Type safety | Both |
 | `tailwindcss` | Styling | Renderer |
-| `zustand` | State Management | Renderer |
+| `zustand` | State management | Renderer |
 | `@tiptap/react`, `@tiptap/starter-kit` | Markdown WYSIWYG | Renderer |
-| `better-sqlite3` | SQLite Zugriff | Main |
-| `chokidar` | File Watching | Main |
-| `gray-matter` | Frontmatter Parsing | Main |
+| `better-sqlite3` | SQLite access | Main |
+| `chokidar` | File watching | Main |
+| `gray-matter` | Frontmatter parsing | Main |
 | `yaml` | contexts.yaml / views.yaml | Main |
 | `electron-builder` | Distribution | Build |
-| `vite`, `@vitejs/plugin-react` | Bundling / Dev Server | Build |
-| `electron-vite` | Electron + Vite Integration | Build |
+| `vite`, `@vitejs/plugin-react` | Bundling / dev server | Build |
+| `electron-vite` | Electron + Vite integration | Build |
 
 ---
 
-## 12. Implementierung
+## 12. Implementation
 
-Die Implementierungsreihenfolge wird über User Stories in **USER-STORIES.md** gesteuert. Jede Story hat Akzeptanzkriterien, Referenzen auf dieses Dokument und die REQUIREMENTS.md, sowie definierte Abhängigkeiten.
+The implementation order is driven by user stories in **USER-STORIES.md**. Each story has acceptance criteria, references to this document and REQUIREMENTS.md, as well as defined dependencies.
 
-Dieses Dokument (ARCHITECTURE.md) ist ein technisches Referenzdokument — kein Projektplan.
+This document (ARCHITECTURE.md) is a technical reference document — not a project plan.

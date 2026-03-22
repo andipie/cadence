@@ -15,7 +15,7 @@ type ScreenView =
 
 export default function WelcomeScreen({ startupState }: WelcomeScreenProps): React.ReactElement {
   // Settings are not loaded yet, use default language
-  const t = getTranslations('de');
+  const t = getTranslations('en');
   const completeStartup = useAppStore((s) => s.completeStartup);
   const [view, setView] = useState<ScreenView>(() => getInitialView(startupState, t));
 

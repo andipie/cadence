@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: Settings = {
   warnWaitingDays: 7,
   warnWaitingCritical: 14,
   obsidianMode: false,
-  language: 'de',
+  language: 'en',
 };
 
 function settingsFilePath(dataDir: string): string {

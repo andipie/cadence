@@ -22,4 +22,4 @@ export const CAPTURE_WINDOW_WIDTH = 400;
 export const CAPTURE_WINDOW_HEIGHT = 160;
 export const DEFAULT_CAPTURE_HOTKEY = 'CommandOrControl+Shift+T';
 
-export const DEFAULT_LANGUAGE: Language = 'de';
+export const DEFAULT_LANGUAGE: Language = 'en';

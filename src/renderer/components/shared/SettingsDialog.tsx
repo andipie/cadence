@@ -213,7 +213,7 @@ export default function SettingsDialog(): React.ReactElement {
           {/* Language */}
           <SettingRow label={t.settings.language} hint={t.settings.languageHint}>
             <select
-              value={settings.language ?? 'de'}
+              value={settings.language ?? 'en'}
               onChange={(e) => updateSettings({ language: e.target.value as 'de' | 'en' })}
               className="w-full px-3 py-1.5 text-sm rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark focus:outline-none focus:ring-1 focus:ring-accent dark:focus:ring-accent-dark"
             >

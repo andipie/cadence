@@ -22,7 +22,7 @@ describe('readSettings / writeSettings', () => {
     expect(settings.dataDir).toBe(tmpDir);
     expect(settings.defaultPriority).toBe('normal');
     expect(settings.confirmDelete).toBe(true);
-    expect(settings.language).toBe('de');
+    expect(settings.language).toBe('en');
   });
 
   it('roundtrips settings through write and read', () => {
