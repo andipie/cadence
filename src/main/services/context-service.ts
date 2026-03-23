@@ -255,14 +255,14 @@ export function listGroupsWithContexts(dataDir: string): { groups: ContextGroup[
   // Populate each group with its contexts
   const groupedContextIds = new Set<string>();
   for (const group of sortedGroups) {
-    group.contexts = contexts.filter((c) => c.group === group.id);
+    group.contexts = contexts.filter((c) => c.group === group.id).sort((a, b) => a.name.localeCompare(b.name));
     for (const c of group.contexts) {
       groupedContextIds.add(c.id);
     }
   }
 
   // Find ungrouped contexts
-  const ungrouped = contexts.filter((c) => !groupedContextIds.has(c.id));
+  const ungrouped = contexts.filter((c) => !groupedContextIds.has(c.id)).sort((a, b) => a.name.localeCompare(b.name));
 
   return { groups: sortedGroups, ungrouped };
 }

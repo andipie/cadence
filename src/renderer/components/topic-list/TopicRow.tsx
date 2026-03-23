@@ -174,6 +174,22 @@ function TopicRowInner({
           {t.topicRow.newBadge}
         </span>
       )}
+      {topic.status === 'ready' && (
+        <span
+          className="text-xs px-1.5 py-0.5 rounded bg-success/10 text-success dark:text-success-dark font-medium flex-shrink-0"
+          title={t.topicRow.readyTopic}
+        >
+          {t.topicRow.readyBadge}
+        </span>
+      )}
+      {topic.status === 'canceled' && (
+        <span
+          className="text-xs px-1.5 py-0.5 rounded bg-text-secondary/10 text-text-secondary dark:text-text-secondary-dark font-medium flex-shrink-0 line-through"
+          title={t.topicRow.canceledTopic}
+        >
+          {t.topicRow.canceledBadge}
+        </span>
+      )}
 
       {/* Recurring indicator */}
       {topic.recurring && (

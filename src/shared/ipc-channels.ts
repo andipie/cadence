@@ -10,6 +10,8 @@ export const IPC = {
   TOPICS_REORDER:       'topics:reorder',
   TOPICS_ADD_NOTE:      'topics:add-note',
   TOPICS_UPDATE_NOTE:   'topics:update-note',
+  TOPICS_DELETE_NOTE:   'topics:delete-note',
+  TOPICS_UPDATE_BODY:   'topics:update-body',
   TOPICS_DUPLICATE:     'topics:duplicate',
 
   // Attachments

@@ -31,6 +31,8 @@ export interface ElectronAPI {
     reorder: (ids: string[], groupKey: string) => Promise<void>;
     addNote: (id: string, content: string) => Promise<TopicDetail>;
     updateNote: (id: string, noteIndex: number, content: string) => Promise<TopicDetail>;
+    deleteNote: (id: string, noteIndex: number) => Promise<TopicDetail>;
+    updateBody: (id: string, body: string) => Promise<TopicDetail>;
     duplicate: (sourceId: string, targetContexts: string[]) => Promise<Topic[]>;
   };
   contexts: {

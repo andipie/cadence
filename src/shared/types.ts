@@ -4,11 +4,12 @@ export type Language = 'de' | 'en';
 
 // --- Enums (Union Types) ---
 
-export type TopicStatus = 'new' | 'follow-up' | 'done';
+export type TopicStatus = 'new' | 'ready' | 'follow-up' | 'done' | 'canceled';
 export type TopicPriority = 'high' | 'medium' | 'normal';
 export type TopicDirection = 'discuss' | 'deliver' | 'waiting';
 export type ContextType = 'person' | 'meeting' | 'group' | 'place' | 'other';
 export type RecurringInterval = 'weekly' | 'biweekly' | 'monthly' | 'quarterly';
+export type NoteMode = 'individual' | 'freetext';
 
 // --- Topic ---
 
@@ -34,6 +35,8 @@ export interface Topic {
 
 export interface TopicDetail extends Topic {
   notes: NoteEntry[];
+  /** Raw body content without frontmatter, for freetext note mode. */
+  rawBody: string;
   /** Raw frontmatter data preserved for Obsidian coexistence. Runtime-only, not stored in DB. */
   _rawFrontmatter?: Record<string, unknown>;
 }
@@ -147,6 +150,7 @@ export interface Settings {
   warnWaitingCritical: number;
   obsidianMode: boolean;
   language: Language;
+  noteMode: NoteMode;
   sidebarWidth: number;
   detailPanelWidth: number;
 }

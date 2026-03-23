@@ -48,7 +48,7 @@ function buildMetaBracket(topic: Topic, t: Translations): string {
   const parts: string[] = [];
 
   // Status — always show for follow-up, skip for 'new' unless priority is also normal
-  const statusLabel = (topic.status === 'new' || topic.status === 'follow-up')
+  const statusLabel = (topic.status === 'new' || topic.status === 'ready' || topic.status === 'follow-up')
     ? t.status[topic.status]
     : undefined;
   if (statusLabel) {
@@ -93,7 +93,7 @@ export function generateAgenda(db: Database.Database, dataDir: string, contextId
   populateTopicContexts(db, topics);
 
   // 3. Filter out completed topics
-  const activeTopics = topics.filter((topic) => topic.status !== 'done');
+  const activeTopics = topics.filter((topic) => topic.status !== 'done' && topic.status !== 'canceled');
 
   // 4. Group by direction
   const groups = new Map<string, Topic[]>();

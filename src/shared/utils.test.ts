@@ -39,7 +39,7 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
 
 /** Minimal translations object for grouping functions */
 const mockT: Translations = {
-  status: { new: 'New', 'follow-up': 'Follow-up', done: 'Done' },
+  status: { new: 'New', ready: 'Ready', 'follow-up': 'Follow-up', done: 'Done', canceled: 'Canceled' },
   priority: { high: 'High', medium: 'Medium', normal: 'Normal' },
   direction: { discuss: 'Discuss', deliver: 'Deliver', waiting: 'Waiting' },
   contextType: {},
@@ -218,7 +218,7 @@ describe('groupTopicsByDirection', () => {
     ];
     const groups = groupTopicsByDirection(topics, mockT);
 
-    expect(groups).toHaveLength(4);
+    expect(groups).toHaveLength(5);
     expect(groups[0].direction).toBe('discuss');
     expect(groups[0].topics).toHaveLength(1);
     expect(groups[1].direction).toBe('deliver');
@@ -227,6 +227,8 @@ describe('groupTopicsByDirection', () => {
     expect(groups[2].topics).toHaveLength(1);
     expect(groups[3].direction).toBe('done');
     expect(groups[3].topics).toHaveLength(1);
+    expect(groups[4].direction).toBe('canceled');
+    expect(groups[4].topics).toHaveLength(0);
   });
 
   it('puts unknown direction into discuss as fallback', () => {
@@ -239,7 +241,7 @@ describe('groupTopicsByDirection', () => {
 
   it('includes empty groups', () => {
     const groups = groupTopicsByDirection([], mockT);
-    expect(groups).toHaveLength(4);
+    expect(groups).toHaveLength(5);
     expect(groups.every((g) => g.topics.length === 0)).toBe(true);
   });
 });
@@ -259,10 +261,12 @@ describe('groupTopics', () => {
 
   it('groups by status', () => {
     const groups = groupTopics(topics, 'status', contexts, mockT);
-    expect(groups.map((g) => g.key)).toEqual(['new', 'follow-up', 'done']);
+    expect(groups.map((g) => g.key)).toEqual(['new', 'ready', 'follow-up', 'done', 'canceled']);
     expect(groups[0].topics).toHaveLength(2); // a, d
-    expect(groups[1].topics).toHaveLength(1); // b
-    expect(groups[2].topics).toHaveLength(1); // c
+    expect(groups[1].topics).toHaveLength(0); // ready (empty)
+    expect(groups[2].topics).toHaveLength(1); // b
+    expect(groups[3].topics).toHaveLength(1); // c
+    expect(groups[4].topics).toHaveLength(0); // canceled (empty)
   });
 
   it('groups by priority', () => {

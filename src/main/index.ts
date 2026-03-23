@@ -31,10 +31,10 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): BrowserWindow {
   // In production on macOS, electron-builder handles the icon via icon.icns.
-  // In production on Linux, the icon is copied to resourcesPath via extraResources.
-  // In dev mode, use the source icon.png directly.
+  // In production on non-macOS platforms, the icon is copied to resourcesPath via extraResources.
+  // macOS uses the .icns from the app bundle. In dev mode, use the source icon.png directly.
   const iconPath = app.isPackaged
-    ? (process.platform === 'linux' ? join(process.resourcesPath, 'icon.png') : undefined)
+    ? (process.platform !== 'darwin' ? join(process.resourcesPath, 'icon.png') : undefined)
     : join(__dirname, '../../resources/icon.png');
 
   mainWindow = new BrowserWindow({

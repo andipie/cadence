@@ -4,7 +4,7 @@ import path from 'path';
 import type Database from 'better-sqlite3';
 import { IPC } from '../../shared/ipc-channels';
 import { DEFAULT_STATUS, DEFAULT_PRIORITY, DEFAULT_DIRECTION } from '../../shared/constants';
-import { serializeTopicFile, addNoteEntry, updateNoteEntry } from '../../shared/markdown';
+import { serializeTopicFile, addNoteEntry, updateNoteEntry, deleteNoteEntry, replaceBody } from '../../shared/markdown';
 import { calculateNextRecurringDate, formatDate } from '../../shared/utils';
 import type { TopicFilter, TopicDetail, CreateTopicInput, UpdateTopicInput, DuplicateTopicInput, AppError } from '../../shared/types';
 import { queryTopics, populateTopicContexts, indexTopic, removeTopic } from '../store/index-db';
@@ -83,7 +83,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         id: uniqueSlug,
         title: data.title,
         status: DEFAULT_STATUS,
-        priority: data.priority ?? DEFAULT_PRIORITY,
+        priority: data.priority ?? readSettings(dataDir).defaultPriority,
         direction: data.direction ?? DEFAULT_DIRECTION,
         contexts: data.contexts ?? [],
         dueDate: data.dueDate ?? null,
@@ -98,6 +98,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         bodyPreview: null,
         filePath: `${uniqueSlug}.md`,
         notes: [],
+        rawBody: '',
       };
 
       // 3. Serialize and write file
@@ -160,10 +161,12 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         updatedAt: now,
       };
 
-      // Set completedAt when marking as erledigt
-      if (data.status === 'done' && existing.status !== 'done') {
+      // Set completedAt when marking as done or canceled
+      const isTerminal = data.status === 'done' || data.status === 'canceled';
+      const wasTerminal = existing.status === 'done' || existing.status === 'canceled';
+      if (isTerminal && !wasTerminal) {
         updated.completedAt = now;
-      } else if (data.status && data.status !== 'done') {
+      } else if (data.status && !isTerminal) {
         updated.completedAt = null;
       }
 
@@ -238,7 +241,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         indexTopic(db, updated);
 
         // Archive/unarchive based on status change
-        const nowErledigt = updated.status === 'done';
+        const nowErledigt = updated.status === 'done' || updated.status === 'canceled';
         if (nowErledigt && !wasArchived) {
           // Move to archive
           addToIgnoreList(oldFilePath);
@@ -362,6 +365,62 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
     }
   });
 
+  // Delete a note entry by index
+  safeHandle(IPC.TOPICS_DELETE_NOTE, (_event, id: string, noteIndex: number) => {
+    try {
+      const topicsFilePath = path.join(topicsDir, `${id}.md`);
+      const archiveFilePath = path.join(dataDir, 'archive', `${id}.md`);
+      const filePath = fs.existsSync(topicsFilePath) ? topicsFilePath : archiveFilePath;
+      const raw = fs.readFileSync(filePath, 'utf-8');
+
+      // Save for undo
+      const t = getTranslations(readSettings(dataDir).language);
+      setLastUndo({ filePath, content: raw, description: t.undo.noteDeleted ?? 'Note deleted' });
+
+      const updatedContent = deleteNoteEntry(raw, noteIndex);
+
+      addToIgnoreList(filePath);
+      try {
+        writeTopicFile(filePath, updatedContent);
+      } finally {
+        removeFromIgnoreList(filePath);
+      }
+
+      const updated = readTopicFile(filePath);
+      indexTopic(db, updated);
+      return updated;
+    } catch (err) {
+      const t = getTranslations(readSettings(dataDir).language);
+      throw makeError(t.errors.noteDeleteFailed ?? 'Failed to delete note', String(err));
+    }
+  });
+
+  // Replace the entire body (freetext note mode)
+  safeHandle(IPC.TOPICS_UPDATE_BODY, (_event, id: string, body: string) => {
+    try {
+      const topicsFilePath = path.join(topicsDir, `${id}.md`);
+      const archiveFilePath = path.join(dataDir, 'archive', `${id}.md`);
+      const filePath = fs.existsSync(topicsFilePath) ? topicsFilePath : archiveFilePath;
+      const raw = fs.readFileSync(filePath, 'utf-8');
+
+      const updatedContent = replaceBody(raw, body);
+
+      addToIgnoreList(filePath);
+      try {
+        writeTopicFile(filePath, updatedContent);
+      } finally {
+        removeFromIgnoreList(filePath);
+      }
+
+      const updated = readTopicFile(filePath);
+      indexTopic(db, updated);
+      return updated;
+    } catch (err) {
+      const t = getTranslations(readSettings(dataDir).language);
+      throw makeError(t.errors.bodyUpdateFailed ?? 'Failed to update body', String(err));
+    }
+  });
+
   // Bulk update multiple topics
   safeHandle(IPC.TOPICS_BULK_UPDATE, (_event, ids: string[], data: Partial<UpdateTopicInput>) => {
     const t = getTranslations(readSettings(dataDir).language);
@@ -397,10 +456,12 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
           updatedAt: now,
         };
 
-        // Set completedAt when marking as erledigt
-        if (data.status === 'done' && existing.status !== 'done') {
+        // Set completedAt when marking as done or canceled
+        const isTerminalBulk = data.status === 'done' || data.status === 'canceled';
+        const wasTerminalBulk = existing.status === 'done' || existing.status === 'canceled';
+        if (isTerminalBulk && !wasTerminalBulk) {
           updated.completedAt = now;
-        } else if (data.status && data.status !== 'done') {
+        } else if (data.status && !isTerminalBulk) {
           updated.completedAt = null;
         }
 
@@ -430,7 +491,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         indexTopic(db, updated);
 
         // Archive/unarchive based on status change
-        const nowErledigt = updated.status === 'done';
+        const nowErledigt = updated.status === 'done' || updated.status === 'canceled';
         if (nowErledigt && !wasArchived) {
           addToIgnoreList(filePath);
           try {
@@ -572,7 +633,7 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
         };
 
         // Reset status if it was erledigt (copy should be active)
-        if (duplicate.status === 'done') {
+        if (duplicate.status === 'done' || duplicate.status === 'canceled') {
           duplicate.status = DEFAULT_STATUS;
         }
 

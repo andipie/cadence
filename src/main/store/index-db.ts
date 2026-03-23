@@ -302,7 +302,7 @@ export function getTopicCountByContext(db: Database.Database): Map<string, numbe
     SELECT tc.context_id, COUNT(*) as count
     FROM topic_contexts tc
     JOIN topics t ON t.id = tc.topic_id
-    WHERE t.status != 'done'
+    WHERE t.status NOT IN ('done', 'canceled')
     GROUP BY tc.context_id
   `;
 
@@ -321,17 +321,17 @@ export function getSystemViewCounts(db: Database.Database): { inbox: number; ove
   const inboxSql = `
     SELECT COUNT(*) as count FROM topics
     WHERE id NOT IN (SELECT topic_id FROM topic_contexts)
-    AND status != 'done'
+    AND status NOT IN ('done', 'canceled')
   `;
   const overdueSql = `
     SELECT COUNT(*) as count FROM topics
     WHERE due_date IS NOT NULL AND due_date < date('now')
-    AND status != 'done'
+    AND status NOT IN ('done', 'canceled')
   `;
   const deliverSql = `
     SELECT COUNT(*) as count FROM topics
     WHERE direction = 'deliver'
-    AND status != 'done'
+    AND status NOT IN ('done', 'canceled')
   `;
 
   const inbox = (db.prepare(inboxSql).get() as { count: number }).count;

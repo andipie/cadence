@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('api', {
     reorder: (ids: string[], groupKey: string) => ipcRenderer.invoke(IPC.TOPICS_REORDER, ids, groupKey),
     addNote: (id: string, content: string) => ipcRenderer.invoke(IPC.TOPICS_ADD_NOTE, id, content),
     updateNote: (id: string, noteIndex: number, content: string) => ipcRenderer.invoke(IPC.TOPICS_UPDATE_NOTE, id, noteIndex, content),
+    deleteNote: (id: string, noteIndex: number) => ipcRenderer.invoke(IPC.TOPICS_DELETE_NOTE, id, noteIndex),
+    updateBody: (id: string, body: string) => ipcRenderer.invoke(IPC.TOPICS_UPDATE_BODY, id, body),
     duplicate: (sourceId: string, targetContexts: string[]) => ipcRenderer.invoke(IPC.TOPICS_DUPLICATE, { sourceId, targetContexts }),
   },
   contexts: {

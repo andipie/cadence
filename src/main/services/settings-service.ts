@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   warnWaitingCritical: 14,
   obsidianMode: false,
   language: 'en',
+  noteMode: 'individual',
   sidebarWidth: 240,
   detailPanelWidth: 380,
 };
@@ -85,6 +86,7 @@ function tryReadSettingsYaml(filePath: string): Partial<Settings> | null {
     if (typeof raw.language === 'string' && (raw.language === 'de' || raw.language === 'en')) {
       settings.language = raw.language as Language;
     }
+    if (raw.note_mode === 'individual' || raw.note_mode === 'freetext') settings.noteMode = raw.note_mode;
     if (typeof raw.sidebar_width === 'number') settings.sidebarWidth = raw.sidebar_width;
     if (typeof raw.detail_panel_width === 'number') settings.detailPanelWidth = raw.detail_panel_width;
 
@@ -121,6 +123,7 @@ export function writeSettings(dataDir: string, settings: Settings): void {
     warn_waiting_critical: settings.warnWaitingCritical,
     obsidian_mode: settings.obsidianMode,
     language: settings.language,
+    note_mode: settings.noteMode,
     sidebar_width: settings.sidebarWidth,
     detail_panel_width: settings.detailPanelWidth,
   };

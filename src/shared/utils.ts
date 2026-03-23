@@ -8,7 +8,7 @@ import { WARN_WAITING_DAYS_DEFAULT, WARN_WAITING_CRITICAL_DEFAULT } from './cons
  * Returns null if not applicable (wrong direction or completed).
  */
 export function calcWaitingDays(topic: Topic): number | null {
-  if (topic.direction !== 'waiting' || topic.status === 'done') {
+  if (topic.direction !== 'waiting' || topic.status === 'done' || topic.status === 'canceled') {
     return null;
   }
 
@@ -31,7 +31,7 @@ export function getWaitingLevel(days: number): 'normal' | 'warning' | 'critical'
  * Checks if a topic is overdue (due date in the past and not completed).
  */
 export function isOverdue(topic: Topic): boolean {
-  if (!topic.dueDate || topic.status === 'done') return false;
+  if (!topic.dueDate || topic.status === 'done' || topic.status === 'canceled') return false;
   const today = new Date().toISOString().split('T')[0];
   return topic.dueDate < today;
 }
@@ -43,17 +43,20 @@ export function isOverdue(topic: Topic): boolean {
 export function groupTopicsByDirection(
   topics: Topic[],
   t: Translations
-): { direction: TopicDirection | 'done'; label: string; topics: Topic[] }[] {
+): { direction: TopicDirection | 'done' | 'canceled'; label: string; topics: Topic[] }[] {
   const groups: Record<string, Topic[]> = {
     discuss: [],
     deliver: [],
     waiting: [],
     done: [],
+    canceled: [],
   };
 
   for (const topic of topics) {
     if (topic.status === 'done') {
       groups.done.push(topic);
+    } else if (topic.status === 'canceled') {
+      groups.canceled.push(topic);
     } else {
       const dir = topic.direction;
       if (groups[dir]) {
@@ -69,6 +72,7 @@ export function groupTopicsByDirection(
     deliver: t.direction.deliver,
     waiting: t.direction.waiting,
     done: t.status.done,
+    canceled: t.status.canceled,
   };
 
   return [
@@ -76,6 +80,7 @@ export function groupTopicsByDirection(
     { direction: 'deliver' as const, label: labels.deliver, topics: groups.deliver },
     { direction: 'waiting' as const, label: labels.waiting, topics: groups.waiting },
     { direction: 'done' as const, label: labels.done, topics: groups.done },
+    { direction: 'canceled' as const, label: labels.canceled, topics: groups.canceled },
   ];
 }
 
@@ -91,7 +96,7 @@ export function groupTopics(
 ): { key: string; label: string; topics: Topic[] }[] {
   switch (groupBy) {
     case 'status': {
-      const buckets: Record<string, Topic[]> = { new: [], 'follow-up': [], done: [] };
+      const buckets: Record<string, Topic[]> = { new: [], ready: [], 'follow-up': [], done: [], canceled: [] };
       for (const t of topics) {
         const key = t.status;
         if (buckets[key]) {
@@ -102,8 +107,10 @@ export function groupTopics(
       }
       return [
         { key: 'new', label: t.status.new, topics: buckets.new },
+        { key: 'ready', label: t.status.ready, topics: buckets.ready },
         { key: 'follow-up', label: t.status['follow-up'], topics: buckets['follow-up'] },
         { key: 'done', label: t.status.done, topics: buckets.done },
+        { key: 'canceled', label: t.status.canceled, topics: buckets.canceled },
       ];
     }
 

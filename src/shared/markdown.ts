@@ -102,6 +102,7 @@ export function parseTopicFile(filePath: string, content: string): TopicDetail {
     bodyPreview: null,
     filePath,
     notes: [],
+    rawBody: parsed.content,
     _rawFrontmatter: { ...rawFrontmatter },
   };
 
@@ -334,4 +335,45 @@ export function updateNoteEntry(content: string, noteIndex: number, newContent: 
   ];
 
   return stringifyMatter(newLines.join('\n'), parsed.data);
+}
+
+/**
+ * Deletes a note entry by index (0 = newest).
+ * Removes the `## YYYY-MM-DD` header and its content block.
+ */
+export function deleteNoteEntry(content: string, noteIndex: number): string {
+  const parsed = parseMatter(content);
+  const lines = parsed.content.split('\n');
+
+  const headerPositions: number[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (BODY_DATE_HEADER_REGEX.test(lines[i])) {
+      headerPositions.push(i);
+    }
+  }
+
+  if (noteIndex < 0 || noteIndex >= headerPositions.length) {
+    throw new Error(`Note index ${noteIndex} out of range (${headerPositions.length} notes)`);
+  }
+
+  const startLine = headerPositions[noteIndex];
+  const endLine = noteIndex + 1 < headerPositions.length
+    ? headerPositions[noteIndex + 1]
+    : lines.length;
+
+  const newLines = [
+    ...lines.slice(0, startLine),
+    ...lines.slice(endLine),
+  ];
+
+  return stringifyMatter(newLines.join('\n'), parsed.data);
+}
+
+/**
+ * Replaces the entire body (everything after frontmatter) with new content.
+ * Used by the freetext note mode.
+ */
+export function replaceBody(content: string, newBody: string): string {
+  const parsed = parseMatter(content);
+  return stringifyMatter(newBody, parsed.data);
 }

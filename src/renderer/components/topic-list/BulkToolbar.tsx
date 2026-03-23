@@ -104,8 +104,10 @@ export default function BulkToolbar(): React.ReactElement | null {
             label={t.bulk.status}
             options={[
               { value: 'new', label: t.status.new },
+              { value: 'ready', label: t.status.ready },
               { value: 'follow-up', label: t.status['follow-up'] },
               { value: 'done', label: t.status.done },
+              { value: 'canceled', label: t.status.canceled },
             ]}
             onSelect={(val) => handleStatusChange(val as TopicStatus)}
             changeLabel={t.bulk.changeLabel}

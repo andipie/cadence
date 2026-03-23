@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useAppStore } from '../../store/app-store';
 import { useTranslation } from '../../hooks/useTranslation';
 import DetailHeader from './DetailHeader';
@@ -7,6 +7,7 @@ import ContextTags from './ContextTags';
 import NotesFeed from './NotesFeed';
 import ActionFooter from './ActionFooter';
 import { DETAIL_PANEL_WIDTH } from '@shared/constants';
+import type { NoteMode } from '@shared/types';
 
 interface DetailPanelProps {
   width?: number;
@@ -22,15 +23,21 @@ export default function DetailPanel({ width = DETAIL_PANEL_WIDTH }: DetailPanelP
     deleteTopic,
     markCompleteFocusKey,
     followUpFocusKey,
+    settings,
+    updateSettings,
   } = useAppStore();
   const t = useTranslation();
+  const noteMode: NoteMode = settings?.noteMode ?? 'individual';
+  const handleNoteModeChange = useCallback((mode: NoteMode) => {
+    updateSettings({ noteMode: mode }, { silent: true });
+  }, [updateSettings]);
 
   // Keyboard shortcut effects — must be before early returns (Rules of Hooks)
   // Read fresh state via getState() to avoid stale closure issues
   useEffect(() => {
     if (markCompleteFocusKey > 0) {
       const topic = useAppStore.getState().selectedTopic;
-      if (topic && topic.status !== 'done') {
+      if (topic && topic.status !== 'done' && topic.status !== 'canceled') {
         useAppStore.getState().updateTopic(topic.id, { status: 'done' });
       }
     }
@@ -39,7 +46,7 @@ export default function DetailPanel({ width = DETAIL_PANEL_WIDTH }: DetailPanelP
   useEffect(() => {
     if (followUpFocusKey > 0) {
       const topic = useAppStore.getState().selectedTopic;
-      if (topic && topic.status !== 'done' && topic.status !== 'follow-up') {
+      if (topic && topic.status !== 'done' && topic.status !== 'canceled' && topic.status !== 'follow-up') {
         useAppStore.getState().updateTopic(topic.id, { status: 'follow-up', followUpDate: null });
       }
     }
@@ -134,10 +141,43 @@ export default function DetailPanel({ width = DETAIL_PANEL_WIDTH }: DetailPanelP
 
         {/* Notes */}
         <div>
-          <h3 className="text-xs font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wide mb-2">
-            {t.detail.notes}
-          </h3>
-          <NotesFeed notes={selectedTopic.notes} topicSlug={selectedTopic.id} />
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wide">
+              {t.detail.notes}
+            </h3>
+            <div className="flex gap-0.5 rounded bg-surface-secondary dark:bg-surface-secondary-dark p-0.5">
+              <button
+                type="button"
+                onClick={() => handleNoteModeChange('individual')}
+                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                  noteMode === 'individual'
+                    ? 'bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark shadow-sm'
+                    : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
+                }`}
+                title={t.notes.modeIndividual}
+              >
+                ☰
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNoteModeChange('freetext')}
+                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                  noteMode === 'freetext'
+                    ? 'bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark shadow-sm'
+                    : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
+                }`}
+                title={t.notes.modeFreetext}
+              >
+                ¶
+              </button>
+            </div>
+          </div>
+          <NotesFeed
+            notes={selectedTopic.notes}
+            rawBody={selectedTopic.rawBody}
+            topicSlug={selectedTopic.id}
+            noteMode={noteMode}
+          />
         </div>
       </div>
 

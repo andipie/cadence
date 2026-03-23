@@ -36,7 +36,7 @@ export default function ResizeHandle({ onDragStart, onDrag, onDragEnd, onReset }
     document.body.style.cursor = 'col-resize';
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [handleMouseMove, handleMouseUp]);
+  }, [onDragStart, handleMouseMove, handleMouseUp]);
 
   const handleDoubleClick = useCallback(() => {
     onReset();

@@ -18,7 +18,6 @@ import {
   MIN_SIDEBAR_WIDTH,
   MAX_SIDEBAR_WIDTH,
   MIN_DETAIL_PANEL_WIDTH,
-  MAX_DETAIL_PANEL_WIDTH,
   MIN_MIDDLE_PANEL_WIDTH,
 } from '@shared/constants';
 
@@ -125,7 +124,7 @@ function AppMain(): React.ReactElement {
 
   function clampDetail(w: number, sidebar: number): number {
     const maxByWindow = window.innerWidth - sidebar - MIN_MIDDLE_PANEL_WIDTH - 8;
-    return Math.max(MIN_DETAIL_PANEL_WIDTH, Math.min(w, MAX_DETAIL_PANEL_WIDTH, maxByWindow));
+    return Math.max(MIN_DETAIL_PANEL_WIDTH, Math.min(w, maxByWindow));
   }
 
   // Re-clamp on window resize

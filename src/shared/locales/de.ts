@@ -4,9 +4,11 @@ export const de: Translations = {
   // --- Domain value labels ---
   status: {
     new: 'Neu',
+    ready: 'Bereit',
     'follow-up': 'Follow-Up',
     waiting: 'Warten',
     done: 'Erledigt',
+    canceled: 'Storniert',
   },
   priority: {
     high: 'Hoch',
@@ -180,6 +182,11 @@ export const de: Translations = {
     editHint: 'Klicken zum Bearbeiten',
     placeholder: 'Notiz eingeben…',
     imageAlt: 'Bild',
+    deleteButton: 'Notiz löschen',
+    deleteConfirm: 'Notiz gelöscht',
+    modeIndividual: 'Einzel-Notizen',
+    modeFreetext: 'Freitext',
+    fallbackHint: 'Notizen konnten nicht als einzelne Einträge geparst werden — Freitext-Modus aktiv',
   },
 
   // --- Action footer ---
@@ -312,6 +319,10 @@ export const de: Translations = {
     followUp: 'Follow-Up',
     newTopic: 'Neues Thema — noch nicht bearbeitet',
     newBadge: 'Neu',
+    readyTopic: 'Bereit — vorbereitet zur Besprechung',
+    readyBadge: 'Bereit',
+    canceledTopic: 'Storniert — nicht mehr relevant',
+    canceledBadge: 'Storniert',
     recurring: 'Wiederkehrend',
     overdueSince: (date: string): string => `Überfällig seit ${date}`,
     dueOn: (date: string): string => `Fällig am ${date}`,
@@ -366,6 +377,7 @@ export const de: Translations = {
     followUpChanged: 'Wiedervorlage geändert',
     topicUpdated: 'Thema aktualisiert',
     topicDeleted: 'Thema gelöscht',
+    noteDeleted: 'Notiz gelöscht',
   },
 
   // --- Errors (main process) ---
@@ -375,6 +387,8 @@ export const de: Translations = {
     topicDeleteFailed: 'Thema konnte nicht gelöscht werden',
     noteAddFailed: 'Notiz konnte nicht hinzugefügt werden',
     noteUpdateFailed: 'Notiz konnte nicht aktualisiert werden',
+    noteDeleteFailed: 'Notiz konnte nicht gelöscht werden',
+    bodyUpdateFailed: 'Inhalt konnte nicht aktualisiert werden',
     noTopicsForBulkUpdate: 'Keine Themen zum Aktualisieren angegeben',
     invalidBulkData: 'Ungültige Aktualisierungsdaten',
     noTopicsForBulkDelete: 'Keine Themen zum Löschen angegeben',

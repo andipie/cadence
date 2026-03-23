@@ -16,8 +16,10 @@ export default function FilterBar(): React.ReactElement {
 
   const STATUS_OPTIONS = useMemo(() => [
     { value: 'new', label: t.status.new },
+    { value: 'ready', label: t.status.ready },
     { value: 'follow-up', label: t.status['follow-up'] },
     { value: 'done', label: t.status.done },
+    { value: 'canceled', label: t.status.canceled },
   ], [t]);
 
   const PRIORITY_OPTIONS = useMemo(() => [

@@ -4,9 +4,11 @@ export const en: Translations = {
   // --- Domain value labels ---
   status: {
     new: 'New',
+    ready: 'Ready',
     'follow-up': 'Follow-Up',
     waiting: 'Waiting',
     done: 'Done',
+    canceled: 'Canceled',
   },
   priority: {
     high: 'High',
@@ -180,6 +182,11 @@ export const en: Translations = {
     editHint: 'Click to edit',
     placeholder: 'Enter note…',
     imageAlt: 'Image',
+    deleteButton: 'Delete note',
+    deleteConfirm: 'Note deleted',
+    modeIndividual: 'Individual notes',
+    modeFreetext: 'Freetext',
+    fallbackHint: 'Notes could not be parsed as individual entries — freetext mode active',
   },
 
   // --- Action footer ---
@@ -312,6 +319,10 @@ export const en: Translations = {
     followUp: 'Follow-Up',
     newTopic: 'New topic — not yet processed',
     newBadge: 'New',
+    readyTopic: 'Ready — prepared for discussion',
+    readyBadge: 'Ready',
+    canceledTopic: 'Canceled — no longer relevant',
+    canceledBadge: 'Canceled',
     recurring: 'Recurring',
     overdueSince: (date: string): string => `Overdue since ${date}`,
     dueOn: (date: string): string => `Due on ${date}`,
@@ -366,6 +377,7 @@ export const en: Translations = {
     followUpChanged: 'Follow-up changed',
     topicUpdated: 'Topic updated',
     topicDeleted: 'Topic deleted',
+    noteDeleted: 'Note deleted',
   },
 
   // --- Errors (main process) ---
@@ -375,6 +387,8 @@ export const en: Translations = {
     topicDeleteFailed: 'Could not delete topic',
     noteAddFailed: 'Could not add note',
     noteUpdateFailed: 'Could not update note',
+    noteDeleteFailed: 'Could not delete note',
+    bodyUpdateFailed: 'Could not update body',
     noTopicsForBulkUpdate: 'No topics specified for update',
     invalidBulkData: 'Invalid update data',
     noTopicsForBulkDelete: 'No topics specified for deletion',

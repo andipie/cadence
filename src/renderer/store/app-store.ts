@@ -263,6 +263,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   selectTopic: (id) => {
+    if (id === get().selectedTopicId) return;
     set({ selectedTopicId: id, selectedTopic: null });
     if (id) {
       get().loadSelectedTopic();
@@ -540,6 +541,32 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  deleteNote: async (noteIndex) => {
+    const { selectedTopicId } = get();
+    if (!selectedTopicId) return;
+    try {
+      const updated = await window.api.topics.deleteNote(selectedTopicId, noteIndex);
+      set({ selectedTopic: updated });
+      const t = getTranslations(get().settings?.language ?? 'en');
+      get().showToast(t.notes.deleteConfirm, { undoable: true });
+    } catch (err) {
+      const t = getTranslations(get().settings?.language ?? 'en');
+      get().showToast(t.toast.noteDeleteError ?? 'Failed to delete note', { severity: 'error' });
+    }
+  },
+
+  updateBody: async (body) => {
+    const { selectedTopicId } = get();
+    if (!selectedTopicId) return;
+    try {
+      const updated = await window.api.topics.updateBody(selectedTopicId, body);
+      set({ selectedTopic: updated });
+    } catch (err) {
+      const t = getTranslations(get().settings?.language ?? 'en');
+      get().showToast(t.toast.bodyUpdateError ?? 'Failed to update body', { severity: 'error' });
+    }
+  },
+
   // Toast + Undo actions
   showToast: (message, options) => {
     set({ toast: { message, severity: options?.severity ?? 'info', undoable: options?.undoable ?? false } });
@@ -598,13 +625,21 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   updateTopic: async (id, data) => {
+    // Optimistic update for immediate UI feedback (no lag on select changes)
+    const previousTopic = get().selectedTopic;
+    if (previousTopic && previousTopic.id === id) {
+      set({ selectedTopic: { ...previousTopic, ...data } as TopicDetail });
+    }
     try {
       const updated = await window.api.topics.update(id, data);
-      // Set topic directly from response to avoid race condition on rename
-      set({
-        selectedTopicId: updated.id,
-        selectedTopic: updated as TopicDetail,
-      });
+      // Only update selection if user hasn't navigated away during async call
+      const currentSelectedId = get().selectedTopicId;
+      if (currentSelectedId === id || currentSelectedId === updated.id) {
+        set({
+          selectedTopicId: updated.id,
+          selectedTopic: updated as TopicDetail,
+        });
+      }
       // Reload lists
       await get().loadTopics();
       await get().loadSystemCounts();
@@ -616,6 +651,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         get().showToast(desc, { undoable: true });
       }
     } catch (err) {
+      // Rollback optimistic update on error
+      if (previousTopic && get().selectedTopicId === id) {
+        set({ selectedTopic: previousTopic });
+      }
       const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicUpdateError;
       get().showToast(message, { severity: 'error' });
@@ -649,7 +688,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
-      set({ selectedTopicId: newTopic.id });
+      // Select the new topic so it appears in the detail panel
+      get().selectTopic(newTopic.id);
     } catch (err) {
       const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicCreateError;
@@ -663,7 +703,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().loadTopics();
       await get().loadSystemCounts();
       await get().loadGroups();
-      set({ selectedTopicId: newTopic.id });
+      // Select the new topic so it appears in the detail panel
+      get().selectTopic(newTopic.id);
     } catch (err) {
       const t = getTranslations(get().settings?.language ?? 'en');
       const message = err instanceof Error ? err.message : t.toast.topicCreateError;
@@ -990,7 +1031,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         filter = { overdue: true };
       } else if (activeView === 'deliver') {
         const lf = get().deliverFilter;
-        filter = { direction: ['deliver'], status: ['new', 'follow-up'], sortBy: 'due_date' };
+        filter = { direction: ['deliver'], status: ['new', 'ready', 'follow-up'], sortBy: 'due_date' };
         if (lf.contexts && lf.contexts.length > 0) {
           filter.contexts = lf.contexts;
         }

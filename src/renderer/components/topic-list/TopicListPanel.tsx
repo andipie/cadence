@@ -50,7 +50,11 @@ export default function TopicListPanel(): React.ReactElement {
 
   // Reload topics when file changes are detected (debounced to prevent rapid reloads)
   const fileChangeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stableLoadTopics = useCallback(() => loadTopics(), [loadTopics]);
+  const stableLoadTopics = useCallback(() => {
+    loadTopics();
+    // Also refresh detail panel to keep it in sync with external file changes
+    useAppStore.getState().loadSelectedTopic();
+  }, [loadTopics]);
 
   useEffect(() => {
     const handleFileChanged = (): void => {
@@ -122,20 +126,22 @@ export default function TopicListPanel(): React.ReactElement {
     return groupTopicsByDirection(topics, t).map((g) => ({ key: g.direction, label: g.label, topics: g.topics }));
   }, [topics, isFreeView, activeView, freeViewFilter.groupBy, contexts, t]);
 
-  const { openCount, totalCount, hasOpenTopics, doneGroup, mainGroups } = useMemo(() => {
-    const _openCount = topics.filter((t) => t.status !== 'done').length;
+  const { openCount, totalCount, hasOpenTopics, doneGroup, canceledGroup, mainGroups } = useMemo(() => {
+    const _openCount = topics.filter((t) => t.status !== 'done' && t.status !== 'canceled').length;
     const _totalCount = topics.length;
     const isDeliver = activeView === 'deliver';
     const _hasOpenTopics = isFreeView || isDeliver
       ? _totalCount > 0
       : topicGroups.slice(0, 3).some((g) => g.topics.length > 0);
     const _doneGroup = !isFreeView && !isDeliver && topicGroups.length >= 4 ? topicGroups[3] : null;
+    const _canceledGroup = !isFreeView && !isDeliver && topicGroups.length >= 5 ? topicGroups[4] : null;
     const _mainGroups = !isFreeView && !isDeliver ? topicGroups.slice(0, 3) : topicGroups;
     return {
       openCount: _openCount,
       totalCount: _totalCount,
       hasOpenTopics: _hasOpenTopics,
       doneGroup: _doneGroup,
+      canceledGroup: _canceledGroup,
       mainGroups: _mainGroups,
     };
   }, [topics, isFreeView, topicGroups]);
@@ -153,8 +159,13 @@ export default function TopicListPanel(): React.ReactElement {
         ids.push(topic.id);
       }
     }
+    if (canceledGroup) {
+      for (const topic of canceledGroup.topics) {
+        ids.push(topic.id);
+      }
+    }
     setVisualTopicOrder(ids);
-  }, [mainGroups, doneGroup, setVisualTopicOrder]);
+  }, [mainGroups, doneGroup, canceledGroup, setVisualTopicOrder]);
 
   // No context/view selected — early return after all hooks
   if (activeView === 'context' && !activeContextId) {
@@ -259,6 +270,27 @@ export default function TopicListPanel(): React.ReactElement {
             doneGroup.topics.length > 0 &&
             selectedTopicIds.length > 0 &&
             doneGroup.topics.some((t) => selectedTopicIds.includes(t.id))
+          }
+          limit={20}
+          multiSelectMode={multiSelectMode}
+          selectedTopicIds={selectedTopicIds}
+          onToggleCheck={toggleTopicSelection}
+        />
+      )}
+
+      {/* Storniert — collapsible, below Erledigt */}
+      {!isFreeView && activeView !== 'overdue' && activeView !== 'deliver' && canceledGroup && canceledGroup.topics.length > 0 && (
+        <DirectionGroup
+          label={canceledGroup.label}
+          topics={canceledGroup.topics}
+          selectedTopicId={selectedTopicId}
+          onSelectTopic={selectTopic}
+          collapsible
+          defaultCollapsed
+          forceExpand={
+            canceledGroup.topics.length > 0 &&
+            selectedTopicIds.length > 0 &&
+            canceledGroup.topics.some((t) => selectedTopicIds.includes(t.id))
           }
           limit={20}
           multiSelectMode={multiSelectMode}
