@@ -76,6 +76,11 @@ export const en: Translations = {
       `${count} result${count !== 1 ? 's' : ''}`,
     openCount: (count: number): string =>
       `${count} open topic${count !== 1 ? 's' : ''}`,
+    filteredOpenCount: (filtered: number, total: number): string =>
+      `${filtered} of ${total} topics`,
+    noFilterMatch: 'No topics match these filters.',
+    resetFilters: 'Reset filters',
+    filterTooltip: 'Filter topics',
     newTopicPlaceholder: 'Add new topic… (⌘N)',
     newTopicInboxPlaceholder: 'New topic in Inbox… (Esc to cancel)',
     newTopicQuick: 'Create new topic quickly (⌘N)',
@@ -113,6 +118,8 @@ export const en: Translations = {
     sortByDueDate: 'Due date',
     sortByCreatedAt: 'Created at',
     sortByUpdatedAt: 'Updated at',
+    sortByTitle: 'Alphabetical',
+    sortByManual: 'Manual',
     dueOverdue: 'Overdue',
     dueToday: 'Today',
     dueTomorrow: 'Tomorrow',
@@ -127,6 +134,13 @@ export const en: Translations = {
     dueDateFilterTooltip: (label: string): string =>
       `Only topics due by ${label.toLowerCase()}`,
     reset: 'Reset',
+    followUpDate: 'Follow-Up Date',
+    followUpOverdue: 'Follow-up overdue',
+    followUpThisWeek: 'Follow-up this week',
+    followUpNextWeek: 'Follow-up next week',
+    noFollowUpDate: 'No follow-up date',
+    customRange: 'Custom range',
+    clearFilter: 'Clear',
   },
 
   // --- Filter chips ---
@@ -138,6 +152,16 @@ export const en: Translations = {
     search: (query: string): string => `Search: "${query}"`,
     dueAfter: (date: string): string => `Due from: ${date}`,
     dueBefore: (date: string): string => `Due until: ${date}`,
+    dueOverdue: 'Due: Overdue',
+    dueThisWeek: 'Due: This week',
+    dueNextWeek: 'Due: Next week',
+    noDueDate: 'No due date',
+    followUpOverdue: 'Follow-up: Overdue',
+    followUpThisWeek: 'Follow-up: This week',
+    followUpNextWeek: 'Follow-up: Next week',
+    noFollowUpDate: 'No follow-up date',
+    followUpAfter: (date: string): string => `Follow-up from: ${date}`,
+    followUpBefore: (date: string): string => `Follow-up until: ${date}`,
     removeFilter: 'Remove filter',
   },
 

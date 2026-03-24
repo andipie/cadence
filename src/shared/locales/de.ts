@@ -76,6 +76,11 @@ export const de: Translations = {
       `${count} ${count === 1 ? 'Ergebnis' : 'Ergebnisse'}`,
     openCount: (count: number): string =>
       `${count} ${count === 1 ? 'offenes Thema' : 'offene Themen'}`,
+    filteredOpenCount: (filtered: number, total: number): string =>
+      `${filtered} von ${total} Themen`,
+    noFilterMatch: 'Keine Themen entsprechen diesen Filtern.',
+    resetFilters: 'Filter zurücksetzen',
+    filterTooltip: 'Themen filtern',
     newTopicPlaceholder: 'Neues Thema hinzufügen… (⌘N)',
     newTopicInboxPlaceholder: 'Neues Thema in Inbox… (Esc zum Abbrechen)',
     newTopicQuick: 'Neues Thema schnell anlegen (⌘N)',
@@ -113,6 +118,8 @@ export const de: Translations = {
     sortByDueDate: 'Fälligkeitsdatum',
     sortByCreatedAt: 'Erstellt am',
     sortByUpdatedAt: 'Aktualisiert am',
+    sortByTitle: 'Alphabetisch',
+    sortByManual: 'Manuell',
     dueOverdue: 'Überfällig',
     dueToday: 'Heute',
     dueTomorrow: 'Morgen',
@@ -127,6 +134,13 @@ export const de: Translations = {
     dueDateFilterTooltip: (label: string): string =>
       `Nur Themen mit Fälligkeit bis ${label.toLowerCase()}`,
     reset: 'Zurücksetzen',
+    followUpDate: 'Wiedervorlage',
+    followUpOverdue: 'Wiedervorlage überfällig',
+    followUpThisWeek: 'Wiedervorlage diese Woche',
+    followUpNextWeek: 'Wiedervorlage nächste Woche',
+    noFollowUpDate: 'Ohne Wiedervorlage',
+    customRange: 'Eigener Zeitraum',
+    clearFilter: 'Löschen',
   },
 
   // --- Filter chips ---
@@ -138,6 +152,16 @@ export const de: Translations = {
     search: (query: string): string => `Suche: "${query}"`,
     dueAfter: (date: string): string => `Fällig ab: ${date}`,
     dueBefore: (date: string): string => `Fällig bis: ${date}`,
+    dueOverdue: 'Fällig: Überfällig',
+    dueThisWeek: 'Fällig: Diese Woche',
+    dueNextWeek: 'Fällig: Nächste Woche',
+    noDueDate: 'Ohne Fälligkeitsdatum',
+    followUpOverdue: 'Wiedervorlage: Überfällig',
+    followUpThisWeek: 'Wiedervorlage: Diese Woche',
+    followUpNextWeek: 'Wiedervorlage: Nächste Woche',
+    noFollowUpDate: 'Ohne Wiedervorlage',
+    followUpAfter: (date: string): string => `Wiedervorlage ab: ${date}`,
+    followUpBefore: (date: string): string => `Wiedervorlage bis: ${date}`,
     removeFilter: 'Filter entfernen',
   },
 

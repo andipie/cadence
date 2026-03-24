@@ -1,4 +1,4 @@
-import type { Topic, TopicDirection, TopicFilter, Context, RecurringInterval } from './types';
+import type { Topic, TopicDirection, TopicFilter, TopicStatus, TopicPriority, ContextViewSortBy, Context, RecurringInterval } from './types';
 import type { Translations } from './locales/types';
 import { WARN_WAITING_DAYS_DEFAULT, WARN_WAITING_CRITICAL_DEFAULT } from './constants';
 
@@ -311,4 +311,127 @@ export function calculateNextRecurringDate(fromDate: string, interval: Recurring
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+// --- Context View client-side sorting ---
+
+/**
+ * Sorts topics within a direction group.
+ * Pinned topics (with sort_order) come first in their manual order,
+ * then unpinned topics sorted by the selected criterion.
+ */
+export function sortTopicsInGroup(topics: Topic[], sortBy: ContextViewSortBy): Topic[] {
+  if (sortBy === 'manual') {
+    // Manual mode: sort_order first, then original order for the rest
+    const pinned = topics.filter((t) => t.sortOrder !== null).sort((a, b) => a.sortOrder! - b.sortOrder!);
+    const unpinned = topics.filter((t) => t.sortOrder === null);
+    return [...pinned, ...unpinned];
+  }
+
+  // Algorithmic sort: sort ALL topics by chosen criterion, ignore sortOrder
+  const sorted = [...topics];
+  sorted.sort((a, b) => {
+    switch (sortBy) {
+      case 'priority': {
+        const prio: Record<string, number> = { high: 1, medium: 2, normal: 3 };
+        const diff = (prio[a.priority] ?? 3) - (prio[b.priority] ?? 3);
+        if (diff !== 0) return diff;
+        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        if (a.dueDate) return -1;
+        if (b.dueDate) return 1;
+        return 0;
+      }
+      case 'due_date':
+        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        if (a.dueDate) return -1;
+        if (b.dueDate) return 1;
+        return 0;
+      case 'created_at':
+        return b.createdAt.localeCompare(a.createdAt);
+      case 'updated_at':
+        return b.updatedAt.localeCompare(a.updatedAt);
+      case 'title':
+        return a.title.localeCompare(b.title);
+    }
+  });
+  return sorted;
+}
+
+// --- Context View client-side filtering ---
+
+function getWeekBoundsClient(offsetWeeks: number): { start: string; end: string } {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + offsetWeeks * 7);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return {
+    start: monday.toISOString().split('T')[0],
+    end: sunday.toISOString().split('T')[0],
+  };
+}
+
+/**
+ * Returns true if a topic matches the given filter criteria.
+ * Used for client-side filtering in context views so Done/Canceled topics
+ * are not affected by filters.
+ */
+export function matchesContextFilter(topic: Topic, filter: TopicFilter): boolean {
+  if (filter.status?.length && !filter.status.includes(topic.status as TopicStatus)) return false;
+  if (filter.priority?.length && !filter.priority.includes(topic.priority as TopicPriority)) return false;
+  if (filter.direction?.length && !filter.direction.includes(topic.direction as TopicDirection)) return false;
+
+  if (filter.search) {
+    const q = filter.search.toLowerCase();
+    if (!topic.title.toLowerCase().includes(q)) return false;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Due date filters
+  if (filter.overdue && !(topic.dueDate && topic.dueDate < today)) return false;
+  if (filter.noDueDate && topic.dueDate) return false;
+  if (filter.dueThisWeek) {
+    const { start, end } = getWeekBoundsClient(0);
+    if (!(topic.dueDate && topic.dueDate >= start && topic.dueDate <= end)) return false;
+  }
+  if (filter.dueNextWeek) {
+    const { start, end } = getWeekBoundsClient(1);
+    if (!(topic.dueDate && topic.dueDate >= start && topic.dueDate <= end)) return false;
+  }
+  if (filter.dueAfter && !(topic.dueDate && topic.dueDate >= filter.dueAfter)) return false;
+  if (filter.dueBefore && !(topic.dueDate && topic.dueDate <= filter.dueBefore)) return false;
+
+  // Follow-up date filters
+  if (filter.followUpOverdue && !(topic.followUpDate && topic.followUpDate < today)) return false;
+  if (filter.noFollowUpDate && topic.followUpDate) return false;
+  if (filter.followUpThisWeek) {
+    const { start, end } = getWeekBoundsClient(0);
+    if (!(topic.followUpDate && topic.followUpDate >= start && topic.followUpDate <= end)) return false;
+  }
+  if (filter.followUpNextWeek) {
+    const { start, end } = getWeekBoundsClient(1);
+    if (!(topic.followUpDate && topic.followUpDate >= start && topic.followUpDate <= end)) return false;
+  }
+  if (filter.followUpAfter && !(topic.followUpDate && topic.followUpDate >= filter.followUpAfter)) return false;
+  if (filter.followUpBefore && !(topic.followUpDate && topic.followUpDate <= filter.followUpBefore)) return false;
+
+  return true;
+}
+
+/** Returns true if any filter field is set. */
+export function hasContextViewFilter(filter: TopicFilter): boolean {
+  return !!(
+    (filter.status && filter.status.length > 0) ||
+    (filter.priority && filter.priority.length > 0) ||
+    (filter.direction && filter.direction.length > 0) ||
+    filter.search ||
+    filter.overdue || filter.noDueDate || filter.dueThisWeek || filter.dueNextWeek ||
+    filter.dueBefore || filter.dueAfter ||
+    filter.followUpOverdue || filter.noFollowUpDate ||
+    filter.followUpThisWeek || filter.followUpNextWeek ||
+    filter.followUpBefore || filter.followUpAfter
+  );
 }

@@ -71,7 +71,21 @@ export default function FilterChips({
     });
   }
 
-  // Due date chips
+  // Due date preset chips
+  if (filter.overdue) {
+    chips.push({ key: 'overdue', label: t.chips.dueOverdue, onRemove: () => onRemoveFilter('overdue') });
+  }
+  if (filter.dueThisWeek) {
+    chips.push({ key: 'dueThisWeek', label: t.chips.dueThisWeek, onRemove: () => onRemoveFilter('dueThisWeek') });
+  }
+  if (filter.dueNextWeek) {
+    chips.push({ key: 'dueNextWeek', label: t.chips.dueNextWeek, onRemove: () => onRemoveFilter('dueNextWeek') });
+  }
+  if (filter.noDueDate) {
+    chips.push({ key: 'noDueDate', label: t.chips.noDueDate, onRemove: () => onRemoveFilter('noDueDate') });
+  }
+
+  // Due date range chips
   if (filter.dueAfter) {
     chips.push({
       key: 'dueAfter',
@@ -84,6 +98,36 @@ export default function FilterChips({
       key: 'dueBefore',
       label: t.chips.dueBefore(formatDate(filter.dueBefore)),
       onRemove: () => onRemoveFilter('dueBefore'),
+    });
+  }
+
+  // Follow-up date preset chips
+  if (filter.followUpOverdue) {
+    chips.push({ key: 'followUpOverdue', label: t.chips.followUpOverdue, onRemove: () => onRemoveFilter('followUpOverdue') });
+  }
+  if (filter.followUpThisWeek) {
+    chips.push({ key: 'followUpThisWeek', label: t.chips.followUpThisWeek, onRemove: () => onRemoveFilter('followUpThisWeek') });
+  }
+  if (filter.followUpNextWeek) {
+    chips.push({ key: 'followUpNextWeek', label: t.chips.followUpNextWeek, onRemove: () => onRemoveFilter('followUpNextWeek') });
+  }
+  if (filter.noFollowUpDate) {
+    chips.push({ key: 'noFollowUpDate', label: t.chips.noFollowUpDate, onRemove: () => onRemoveFilter('noFollowUpDate') });
+  }
+
+  // Follow-up date range chips
+  if (filter.followUpAfter) {
+    chips.push({
+      key: 'followUpAfter',
+      label: t.chips.followUpAfter(formatDate(filter.followUpAfter)),
+      onRemove: () => onRemoveFilter('followUpAfter'),
+    });
+  }
+  if (filter.followUpBefore) {
+    chips.push({
+      key: 'followUpBefore',
+      label: t.chips.followUpBefore(formatDate(filter.followUpBefore)),
+      onRemove: () => onRemoveFilter('followUpBefore'),
     });
   }
 

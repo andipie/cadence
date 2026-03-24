@@ -4,10 +4,12 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useAppStore } from '../../store/app-store';
 import { useTranslation } from '../../hooks/useTranslation';
-import { groupTopicsByDirection, groupTopics, groupTopicsByDueProximity } from '@shared/utils';
+import { groupTopicsByDirection, groupTopics, groupTopicsByDueProximity, matchesContextFilter, hasContextViewFilter, sortTopicsInGroup } from '@shared/utils';
+import type { ContextViewSortBy } from '@shared/types';
 import DirectionGroup from './DirectionGroup';
 import FilterBar from './FilterBar';
 import DeliverFilterBar from './DeliverFilterBar';
+import ContextFilterBar from './ContextFilterBar';
 import BulkToolbar from './BulkToolbar';
 export default function TopicListPanel(): React.ReactElement {
   const {
@@ -25,6 +27,13 @@ export default function TopicListPanel(): React.ReactElement {
     quickAddInboxMode,
     resetQuickAddInbox,
     freeViewFilter,
+    contextViewFilter,
+    contextViewFilterOpen,
+    contextSearchMatchIds,
+    toggleContextViewFilterOpen,
+    resetContextViewFilter,
+    settings,
+    setContextViewSortBy,
     generateAgenda,
     multiSelectMode,
     selectedTopicIds,
@@ -39,7 +48,8 @@ export default function TopicListPanel(): React.ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isFreeView = activeView === 'free-view';
-  const isDndEnabled = activeView === 'context' && !multiSelectMode;
+  const contextViewSortBy: ContextViewSortBy = settings?.contextViewSortBy ?? 'manual';
+  const isDndEnabled = activeView === 'context' && !multiSelectMode && contextViewSortBy === 'manual';
 
   // DnD sensors — require 5px movement to start drag (prevents accidental drags)
   const sensors = useSensors(
@@ -114,6 +124,28 @@ export default function TopicListPanel(): React.ReactElement {
     ? t.topicList.newTopicInboxPlaceholder
     : t.topicList.newTopicPlaceholder;
 
+  // Client-side filtering for context views (Done/Canceled always pass through)
+  const isContextFiltered = activeView === 'context' && hasContextViewFilter(contextViewFilter);
+  const filteredTopics = useMemo(() => {
+    if (activeView !== 'context' || !hasContextViewFilter(contextViewFilter)) return topics;
+    return topics.filter((topic) => {
+      if (topic.status === 'done' || topic.status === 'canceled') return true;
+
+      // Search: match title client-side OR body via server-side FTS5 match IDs
+      if (contextViewFilter.search) {
+        const q = contextViewFilter.search.toLowerCase();
+        const titleMatch = topic.title.toLowerCase().includes(q);
+        const bodyMatch = contextSearchMatchIds?.includes(topic.id) ?? false;
+        if (!titleMatch && !bodyMatch) return false;
+        // Apply remaining filters (without search to avoid double-check)
+        const filterWithoutSearch = { ...contextViewFilter, search: undefined };
+        return matchesContextFilter(topic, filterWithoutSearch);
+      }
+
+      return matchesContextFilter(topic, contextViewFilter);
+    });
+  }, [topics, activeView, contextViewFilter, contextSearchMatchIds]);
+
   // Memoize grouping to avoid recomputing on every render (e.g. selection changes)
   // Must be before early returns to satisfy Rules of Hooks
   const topicGroups = useMemo(() => {
@@ -123,12 +155,23 @@ export default function TopicListPanel(): React.ReactElement {
     if (activeView === 'deliver') {
       return groupTopicsByDueProximity(topics, t);
     }
-    return groupTopicsByDirection(topics, t).map((g) => ({ key: g.direction, label: g.label, topics: g.topics }));
-  }, [topics, isFreeView, activeView, freeViewFilter.groupBy, contexts, t]);
+    return groupTopicsByDirection(filteredTopics, t).map((g) => ({
+      key: g.direction,
+      label: g.label,
+      topics: g.direction === 'done' || g.direction === 'canceled'
+        ? g.topics
+        : sortTopicsInGroup(g.topics, contextViewSortBy),
+    }));
+  }, [topics, filteredTopics, isFreeView, activeView, freeViewFilter.groupBy, contexts, t, contextViewSortBy]);
+
+  // Unfiltered open count for "X of Y" display
+  const unfilteredOpenCount = useMemo(() => {
+    return topics.filter((t) => t.status !== 'done' && t.status !== 'canceled').length;
+  }, [topics]);
 
   const { openCount, totalCount, hasOpenTopics, doneGroup, canceledGroup, mainGroups } = useMemo(() => {
-    const _openCount = topics.filter((t) => t.status !== 'done' && t.status !== 'canceled').length;
-    const _totalCount = topics.length;
+    const _openCount = filteredTopics.filter((t) => t.status !== 'done' && t.status !== 'canceled').length;
+    const _totalCount = filteredTopics.length;
     const isDeliver = activeView === 'deliver';
     const _hasOpenTopics = isFreeView || isDeliver
       ? _totalCount > 0
@@ -217,22 +260,33 @@ export default function TopicListPanel(): React.ReactElement {
         <div className="flex items-center justify-center p-8">
           <div className="text-center">
             <p className="text-text-secondary dark:text-text-secondary-dark">
-              {isFreeView
-                ? t.topicList.noTopics
-                : activeView === 'inbox'
-                  ? t.topicList.allDone
-                  : activeView === 'overdue'
-                    ? t.topicList.noOverdue
-                    : activeView === 'deliver'
-                      ? t.topicList.nothingToDeliver
-                      : t.topicList.noOpenTopics}
+              {isContextFiltered
+                ? t.topicList.noFilterMatch
+                : isFreeView
+                  ? t.topicList.noTopics
+                  : activeView === 'inbox'
+                    ? t.topicList.allDone
+                    : activeView === 'overdue'
+                      ? t.topicList.noOverdue
+                      : activeView === 'deliver'
+                        ? t.topicList.nothingToDeliver
+                        : t.topicList.noOpenTopics}
             </p>
+            {isContextFiltered && (
+              <button
+                type="button"
+                className="text-sm text-accent dark:text-accent-dark hover:underline mt-1"
+                onClick={resetContextViewFilter}
+              >
+                {t.topicList.resetFilters}
+              </button>
+            )}
             {isFreeView && (
               <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-1">
                 {t.topicList.tryOtherFilters}
               </p>
             )}
-            {!isFreeView && doneGroup && doneGroup.topics.length > 0 && (
+            {!isFreeView && !isContextFiltered && doneGroup && doneGroup.topics.length > 0 && (
               <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-1">
                 {t.topicList.completedExists(doneGroup.topics.length)}
               </p>
@@ -312,8 +366,48 @@ export default function TopicListPanel(): React.ReactElement {
           <span className="text-sm text-text-secondary dark:text-text-secondary-dark">
             {isFreeView
               ? t.topicList.resultsCount(totalCount)
-              : t.topicList.openCount(openCount)}
+              : isContextFiltered
+                ? t.topicList.filteredOpenCount(openCount, unfilteredOpenCount)
+                : t.topicList.openCount(openCount)}
           </span>
+
+          {/* Context View sort selector */}
+          {activeView === 'context' && (
+            <div className="flex items-center gap-1">
+              <select
+                value={contextViewSortBy}
+                onChange={(e) => setContextViewSortBy(e.target.value as ContextViewSortBy)}
+                className="px-1.5 py-0.5 rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark text-xs"
+                title={t.filter.sortByTooltip}
+              >
+                <option value="manual">{t.filter.sortByManual}</option>
+                <option value="priority">{t.filter.sortByPriority}</option>
+                <option value="due_date">{t.filter.sortByDueDate}</option>
+                <option value="created_at">{t.filter.sortByCreatedAt}</option>
+                <option value="updated_at">{t.filter.sortByUpdatedAt}</option>
+                <option value="title">{t.filter.sortByTitle}</option>
+              </select>
+            </div>
+          )}
+
+          {/* Context View filter toggle */}
+          {activeView === 'context' && (
+            <button
+              type="button"
+              onClick={toggleContextViewFilterOpen}
+              className={`p-1.5 rounded transition-colors ${
+                contextViewFilterOpen || isContextFiltered
+                  ? 'bg-accent/10 text-accent dark:text-accent-dark'
+                  : 'text-text-secondary dark:text-text-secondary-dark hover:bg-surface-hover dark:hover:bg-surface-hover-dark'
+              }`}
+              title={t.topicList.filterTooltip}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button>
+          )}
+
           {/* Multi-Select toggle */}
           <button
             type="button"
@@ -345,6 +439,9 @@ export default function TopicListPanel(): React.ReactElement {
 
       {/* Filter bar (free view only) */}
       {isFreeView && <FilterBar />}
+
+      {/* Context view filter bar (collapsible) */}
+      {activeView === 'context' && contextViewFilterOpen && <ContextFilterBar />}
 
       {/* Liefern filter bar */}
       {activeView === 'deliver' && <DeliverFilterBar />}

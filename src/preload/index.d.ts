@@ -34,6 +34,7 @@ export interface ElectronAPI {
     deleteNote: (id: string, noteIndex: number) => Promise<TopicDetail>;
     updateBody: (id: string, body: string) => Promise<TopicDetail>;
     duplicate: (sourceId: string, targetContexts: string[]) => Promise<Topic[]>;
+    searchIds: (query: string) => Promise<string[]>;
   };
   contexts: {
     list: () => Promise<Context[]>;

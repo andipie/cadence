@@ -7,7 +7,7 @@ import { DEFAULT_STATUS, DEFAULT_PRIORITY, DEFAULT_DIRECTION } from '../../share
 import { serializeTopicFile, addNoteEntry, updateNoteEntry, deleteNoteEntry, replaceBody } from '../../shared/markdown';
 import { calculateNextRecurringDate, formatDate } from '../../shared/utils';
 import type { TopicFilter, TopicDetail, CreateTopicInput, UpdateTopicInput, DuplicateTopicInput, AppError } from '../../shared/types';
-import { queryTopics, populateTopicContexts, indexTopic, removeTopic } from '../store/index-db';
+import { queryTopics, populateTopicContexts, indexTopic, removeTopic, searchTopicIds } from '../store/index-db';
 import { readTopicFile, writeTopicFile, listTopicFiles, deleteTopicFile, moveTopicToTrash, moveTopicToArchive, moveTopicFromArchive } from '../store/file-store';
 import { addToIgnoreList, removeFromIgnoreList } from '../store/file-watcher';
 import { titleToSlug, ensureUniqueSlug, slugFromFilePath } from '../services/slug-service';
@@ -722,5 +722,13 @@ export function registerTopicHandlers(db: Database.Database, dataDir: string): v
     } catch (err) {
       throw makeError(t.errors.undoFailed, String(err));
     }
+  });
+
+  // Search topic IDs via FTS5 (for context view body search)
+  safeHandle(IPC.TOPICS_SEARCH_IDS, (_event, query: string) => {
+    if (typeof query !== 'string') {
+      throw makeError('Invalid search query');
+    }
+    return searchTopicIds(db, query);
   });
 }

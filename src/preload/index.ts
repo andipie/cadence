@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('api', {
     deleteNote: (id: string, noteIndex: number) => ipcRenderer.invoke(IPC.TOPICS_DELETE_NOTE, id, noteIndex),
     updateBody: (id: string, body: string) => ipcRenderer.invoke(IPC.TOPICS_UPDATE_BODY, id, body),
     duplicate: (sourceId: string, targetContexts: string[]) => ipcRenderer.invoke(IPC.TOPICS_DUPLICATE, { sourceId, targetContexts }),
+    searchIds: (query: string) => ipcRenderer.invoke(IPC.TOPICS_SEARCH_IDS, query),
   },
   contexts: {
     list: () => ipcRenderer.invoke(IPC.CONTEXTS_LIST),

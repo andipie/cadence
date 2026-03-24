@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: Settings = {
   noteMode: 'individual',
   sidebarWidth: 240,
   detailPanelWidth: 380,
+  contextViewSortBy: 'manual',
 };
 
 function settingsFilePath(dataDir: string): string {
@@ -89,6 +90,12 @@ function tryReadSettingsYaml(filePath: string): Partial<Settings> | null {
     if (raw.note_mode === 'individual' || raw.note_mode === 'freetext') settings.noteMode = raw.note_mode;
     if (typeof raw.sidebar_width === 'number') settings.sidebarWidth = raw.sidebar_width;
     if (typeof raw.detail_panel_width === 'number') settings.detailPanelWidth = raw.detail_panel_width;
+    if (typeof raw.context_view_sort_by === 'string') {
+      const valid = ['manual', 'priority', 'due_date', 'created_at', 'updated_at', 'title'];
+      if (valid.includes(raw.context_view_sort_by)) {
+        settings.contextViewSortBy = raw.context_view_sort_by as Settings['contextViewSortBy'];
+      }
+    }
 
     return settings;
   } catch (err) {
@@ -126,6 +133,7 @@ export function writeSettings(dataDir: string, settings: Settings): void {
     note_mode: settings.noteMode,
     sidebar_width: settings.sidebarWidth,
     detail_panel_width: settings.detailPanelWidth,
+    context_view_sort_by: settings.contextViewSortBy,
   };
 
   const yamlContent = YAML.stringify(data, { lineWidth: 0 });

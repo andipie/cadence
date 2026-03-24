@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import type { Topic, TopicFilter } from '../../shared/types';
+import type { Topic, TopicDetail, TopicFilter } from '../../shared/types';
 import { readTopicFile, listTopicFiles } from './file-store';
 
 // --- Schema ---
@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS topics (
   recurring_interval TEXT,
   recurring_next  TEXT,
   body_preview    TEXT,
+  body            TEXT,
   file_path       TEXT NOT NULL
 );
 
@@ -38,28 +39,28 @@ CREATE INDEX IF NOT EXISTS idx_topics_direction ON topics(direction);
 CREATE INDEX IF NOT EXISTS idx_topics_due_date ON topics(due_date);
 CREATE INDEX IF NOT EXISTS idx_topic_contexts_context ON topic_contexts(context_id);
 
--- FTS5 full-text search index (US-17)
+-- FTS5 full-text search index on title + full body
 CREATE VIRTUAL TABLE IF NOT EXISTS topics_fts USING fts5(
-  title, body_preview,
+  title, body,
   content=topics, content_rowid=rowid
 );
 
 -- Sync triggers: keep FTS in sync with topics table
 CREATE TRIGGER IF NOT EXISTS topics_ai AFTER INSERT ON topics BEGIN
-  INSERT INTO topics_fts(rowid, title, body_preview)
-    VALUES (new.rowid, new.title, new.body_preview);
+  INSERT INTO topics_fts(rowid, title, body)
+    VALUES (new.rowid, new.title, new.body);
 END;
 
 CREATE TRIGGER IF NOT EXISTS topics_ad AFTER DELETE ON topics BEGIN
-  INSERT INTO topics_fts(topics_fts, rowid, title, body_preview)
-    VALUES ('delete', old.rowid, old.title, old.body_preview);
+  INSERT INTO topics_fts(topics_fts, rowid, title, body)
+    VALUES ('delete', old.rowid, old.title, old.body);
 END;
 
 CREATE TRIGGER IF NOT EXISTS topics_au AFTER UPDATE ON topics BEGIN
-  INSERT INTO topics_fts(topics_fts, rowid, title, body_preview)
-    VALUES ('delete', old.rowid, old.title, old.body_preview);
-  INSERT INTO topics_fts(rowid, title, body_preview)
-    VALUES (new.rowid, new.title, new.body_preview);
+  INSERT INTO topics_fts(topics_fts, rowid, title, body)
+    VALUES ('delete', old.rowid, old.title, old.body);
+  INSERT INTO topics_fts(rowid, title, body)
+    VALUES (new.rowid, new.title, new.body);
 END;
 `;
 
@@ -109,7 +110,19 @@ export function initDatabase(dbPath: string): Database.Database {
     db.pragma('foreign_keys = ON');
   }
 
+  // Check schema version — if outdated, delete and recreate
+  // (index is disposable, rebuilt from filesystem)
+  const version = (db.pragma('user_version') as Array<{ user_version: number }>)[0]?.user_version ?? 0;
+  if (version < 2) {
+    db.close();
+    deleteDatabaseFiles(dbPath);
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+    db.pragma('foreign_keys = ON');
+  }
+
   db.exec(SCHEMA_SQL);
+  db.pragma('user_version = 2');
   return db;
 }
 
@@ -131,9 +144,9 @@ const UPSERT_TOPIC_SQL = `
   INSERT OR REPLACE INTO topics
     (id, title, status, priority, direction, due_date, follow_up_date,
      created_at, updated_at, completed_at, sort_order,
-     recurring, recurring_interval, recurring_next, body_preview, file_path)
+     recurring, recurring_interval, recurring_next, body_preview, body, file_path)
   VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
 const DELETE_TOPIC_CONTEXTS_SQL = `DELETE FROM topic_contexts WHERE topic_id = ?`;
@@ -142,8 +155,9 @@ const DELETE_TOPIC_SQL = `DELETE FROM topics WHERE id = ?`;
 
 /**
  * Inserts or updates a topic in the index.
+ * Accepts TopicDetail to store the full body text for FTS5 search.
  */
-export function indexTopic(db: Database.Database, topic: Topic): void {
+export function indexTopic(db: Database.Database, topic: TopicDetail): void {
   const upsert = db.prepare(UPSERT_TOPIC_SQL);
   const deleteContexts = db.prepare(DELETE_TOPIC_CONTEXTS_SQL);
   const insertContext = db.prepare(INSERT_TOPIC_CONTEXT_SQL);
@@ -165,6 +179,7 @@ export function indexTopic(db: Database.Database, topic: Topic): void {
       topic.recurringInterval,
       topic.recurringNext,
       topic.bodyPreview,
+      topic.rawBody ?? null,
       topic.filePath
     );
 
@@ -190,6 +205,22 @@ export function removeTopic(db: Database.Database, topicId: string): void {
   });
 
   transaction();
+}
+
+// --- Helpers ---
+
+function getWeekBounds(offsetWeeks: number): { start: string; end: string } {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon, ...
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + offsetWeeks * 7);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return {
+    start: monday.toISOString().split('T')[0],
+    end: sunday.toISOString().split('T')[0],
+  };
 }
 
 // --- Queries ---
@@ -235,9 +266,9 @@ export function queryTopics(db: Database.Database, filter: TopicFilter): Topic[]
     params.push(...filter.direction);
   }
 
-  // Overdue filter
+  // Overdue filter (due date past, excluding done/canceled)
   if (filter.overdue) {
-    conditions.push(`t.due_date IS NOT NULL AND t.due_date < date('now')`);
+    conditions.push(`t.due_date IS NOT NULL AND t.due_date < date('now') AND t.status NOT IN ('done', 'canceled')`);
   }
 
   // Due date range
@@ -250,11 +281,64 @@ export function queryTopics(db: Database.Database, filter: TopicFilter): Topic[]
     params.push(filter.dueAfter);
   }
 
-  // Text search (simple LIKE for now, FTS5 in US-17)
+  // No due date
+  if (filter.noDueDate) {
+    conditions.push(`t.due_date IS NULL`);
+  }
+
+  // Due this week / next week
+  if (filter.dueThisWeek) {
+    const { start, end } = getWeekBounds(0);
+    conditions.push(`t.due_date IS NOT NULL AND t.due_date >= ? AND t.due_date <= ?`);
+    params.push(start, end);
+  }
+  if (filter.dueNextWeek) {
+    const { start, end } = getWeekBounds(1);
+    conditions.push(`t.due_date IS NOT NULL AND t.due_date >= ? AND t.due_date <= ?`);
+    params.push(start, end);
+  }
+
+  // Follow-up overdue (excluding done/canceled)
+  if (filter.followUpOverdue) {
+    const today = new Date().toISOString().split('T')[0];
+    conditions.push(`t.follow_up_date IS NOT NULL AND t.follow_up_date < ? AND t.status NOT IN ('done', 'canceled')`);
+    params.push(today);
+  }
+
+  // Follow-up date range
+  if (filter.followUpBefore) {
+    conditions.push(`t.follow_up_date IS NOT NULL AND t.follow_up_date <= ?`);
+    params.push(filter.followUpBefore);
+  }
+  if (filter.followUpAfter) {
+    conditions.push(`t.follow_up_date IS NOT NULL AND t.follow_up_date >= ?`);
+    params.push(filter.followUpAfter);
+  }
+
+  // No follow-up date
+  if (filter.noFollowUpDate) {
+    conditions.push(`t.follow_up_date IS NULL`);
+  }
+
+  // Follow-up this week / next week
+  if (filter.followUpThisWeek) {
+    const { start, end } = getWeekBounds(0);
+    conditions.push(`t.follow_up_date IS NOT NULL AND t.follow_up_date >= ? AND t.follow_up_date <= ?`);
+    params.push(start, end);
+  }
+  if (filter.followUpNextWeek) {
+    const { start, end } = getWeekBounds(1);
+    conditions.push(`t.follow_up_date IS NOT NULL AND t.follow_up_date >= ? AND t.follow_up_date <= ?`);
+    params.push(start, end);
+  }
+
+  // Full-text search via FTS5 (searches title + full body)
   if (filter.search) {
-    conditions.push(`(t.title LIKE ? OR t.body_preview LIKE ?)`);
-    const searchPattern = `%${filter.search}%`;
-    params.push(searchPattern, searchPattern);
+    const ftsQuery = sanitizeFtsQuery(filter.search);
+    if (ftsQuery) {
+      conditions.push(`t.rowid IN (SELECT rowid FROM topics_fts WHERE topics_fts MATCH ?)`);
+      params.push(ftsQuery);
+    }
   }
 
   const whereClause = conditions.length > 0
@@ -459,6 +543,29 @@ export function searchTopicsFts(
   }
 }
 
+/**
+ * Searches topics using FTS5 and returns only the matching topic IDs.
+ * Used for context view body search where only IDs are needed for client-side filtering.
+ */
+export function searchTopicIds(db: Database.Database, query: string): string[] {
+  const ftsQuery = sanitizeFtsQuery(query);
+  if (!ftsQuery) return [];
+
+  const sql = `
+    SELECT t.id
+    FROM topics_fts
+    JOIN topics t ON t.rowid = topics_fts.rowid
+    WHERE topics_fts MATCH ?
+  `;
+
+  try {
+    const rows = db.prepare(sql).all(ftsQuery) as Array<{ id: string }>;
+    return rows.map((r) => r.id);
+  } catch {
+    return [];
+  }
+}
+
 // --- Internal helpers ---
 
 interface TopicRow {
@@ -477,6 +584,7 @@ interface TopicRow {
   recurring_interval: string | null;
   recurring_next: string | null;
   body_preview: string | null;
+  body: string | null;
   file_path: string;
 }
 

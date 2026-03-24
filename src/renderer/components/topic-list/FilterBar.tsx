@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../store/app-store';
 import { useTranslation } from '../../hooks/useTranslation';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import DateFilterDropdown from './DateFilterDropdown';
+import type { DatePreset } from './DateFilterDropdown';
 import FilterChips from './FilterChips';
 import type { TopicStatus, TopicPriority, TopicDirection, TopicFilter } from '@shared/types';
 
@@ -48,6 +50,69 @@ export default function FilterBar(): React.ReactElement {
     { value: 'created_at', label: t.filter.sortByCreatedAt },
     { value: 'updated_at', label: t.filter.sortByUpdatedAt },
   ], [t]);
+
+  const DUE_DATE_PRESETS = useMemo(() => [
+    { value: 'overdue' as DatePreset, label: t.filter.dueOverdue },
+    { value: 'thisWeek' as DatePreset, label: t.filter.dueThisWeek },
+    { value: 'nextWeek' as DatePreset, label: t.filter.dueNextWeek },
+    { value: 'noDate' as DatePreset, label: t.filter.noDueDate },
+  ], [t]);
+
+  const FOLLOW_UP_PRESETS = useMemo(() => [
+    { value: 'overdue' as DatePreset, label: t.filter.followUpOverdue },
+    { value: 'thisWeek' as DatePreset, label: t.filter.followUpThisWeek },
+    { value: 'nextWeek' as DatePreset, label: t.filter.followUpNextWeek },
+    { value: 'noDate' as DatePreset, label: t.filter.noFollowUpDate },
+  ], [t]);
+
+  // Derive current preset from filter state
+  const dueDatePreset: DatePreset | null =
+    freeViewFilter.overdue ? 'overdue' :
+    freeViewFilter.dueThisWeek ? 'thisWeek' :
+    freeViewFilter.dueNextWeek ? 'nextWeek' :
+    freeViewFilter.noDueDate ? 'noDate' : null;
+
+  const followUpPreset: DatePreset | null =
+    freeViewFilter.followUpOverdue ? 'overdue' :
+    freeViewFilter.followUpThisWeek ? 'thisWeek' :
+    freeViewFilter.followUpNextWeek ? 'nextWeek' :
+    freeViewFilter.noFollowUpDate ? 'noDate' : null;
+
+  function handleDueDatePreset(preset: DatePreset | null): void {
+    const clear = { overdue: undefined, dueThisWeek: undefined, dueNextWeek: undefined, noDueDate: undefined, dueBefore: undefined, dueAfter: undefined };
+    if (!preset) { updateFreeViewFilter(clear); return; }
+    switch (preset) {
+      case 'overdue': updateFreeViewFilter({ ...clear, overdue: true }); break;
+      case 'thisWeek': updateFreeViewFilter({ ...clear, dueThisWeek: true }); break;
+      case 'nextWeek': updateFreeViewFilter({ ...clear, dueNextWeek: true }); break;
+      case 'noDate': updateFreeViewFilter({ ...clear, noDueDate: true }); break;
+    }
+  }
+
+  function handleDueDateCustomRange(from?: string, to?: string): void {
+    updateFreeViewFilter({
+      overdue: undefined, dueThisWeek: undefined, dueNextWeek: undefined, noDueDate: undefined,
+      dueAfter: from, dueBefore: to,
+    });
+  }
+
+  function handleFollowUpPreset(preset: DatePreset | null): void {
+    const clear = { followUpOverdue: undefined, followUpThisWeek: undefined, followUpNextWeek: undefined, noFollowUpDate: undefined, followUpBefore: undefined, followUpAfter: undefined };
+    if (!preset) { updateFreeViewFilter(clear); return; }
+    switch (preset) {
+      case 'overdue': updateFreeViewFilter({ ...clear, followUpOverdue: true }); break;
+      case 'thisWeek': updateFreeViewFilter({ ...clear, followUpThisWeek: true }); break;
+      case 'nextWeek': updateFreeViewFilter({ ...clear, followUpNextWeek: true }); break;
+      case 'noDate': updateFreeViewFilter({ ...clear, noFollowUpDate: true }); break;
+    }
+  }
+
+  function handleFollowUpCustomRange(from?: string, to?: string): void {
+    updateFreeViewFilter({
+      followUpOverdue: undefined, followUpThisWeek: undefined, followUpNextWeek: undefined, noFollowUpDate: undefined,
+      followUpAfter: from, followUpBefore: to,
+    });
+  }
 
   // Local search state for debouncing
   const [searchInput, setSearchInput] = useState(freeViewFilter.search ?? '');
@@ -115,10 +180,25 @@ export default function FilterBar(): React.ReactElement {
     (freeViewFilter.contexts && freeViewFilter.contexts.length > 0) ||
     freeViewFilter.search ||
     freeViewFilter.dueBefore ||
-    freeViewFilter.dueAfter;
+    freeViewFilter.dueAfter ||
+    freeViewFilter.overdue ||
+    freeViewFilter.dueThisWeek ||
+    freeViewFilter.dueNextWeek ||
+    freeViewFilter.noDueDate ||
+    freeViewFilter.followUpOverdue ||
+    freeViewFilter.followUpThisWeek ||
+    freeViewFilter.followUpNextWeek ||
+    freeViewFilter.noFollowUpDate ||
+    freeViewFilter.followUpBefore ||
+    freeViewFilter.followUpAfter;
+
+  const SCALAR_FILTER_KEYS = [
+    'search', 'dueBefore', 'dueAfter', 'overdue', 'dueThisWeek', 'dueNextWeek', 'noDueDate',
+    'followUpOverdue', 'followUpBefore', 'followUpAfter', 'noFollowUpDate', 'followUpThisWeek', 'followUpNextWeek',
+  ];
 
   function handleRemoveFilter(dimension: string, value?: string): void {
-    if (dimension === 'search' || dimension === 'dueBefore' || dimension === 'dueAfter') {
+    if (SCALAR_FILTER_KEYS.includes(dimension)) {
       updateFreeViewFilter({ [dimension]: undefined });
     } else {
       // Remove a specific value from an array filter
@@ -170,25 +250,27 @@ export default function FilterBar(): React.ReactElement {
           onChange={(values) => updateFreeViewFilter({ contexts: values.length > 0 ? values : undefined })}
         />
 
-        {/* Due date range */}
-        <div className="flex items-center gap-1 text-xs text-text-secondary dark:text-text-secondary-dark">
-          <span>{t.filter.due}</span>
-          <input
-            type="date"
-            value={freeViewFilter.dueAfter ?? ''}
-            onChange={(e) => updateFreeViewFilter({ dueAfter: e.target.value || undefined })}
-            className="px-1.5 py-0.5 rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark text-xs"
-            title={t.filter.dueFrom}
-          />
-          <span>–</span>
-          <input
-            type="date"
-            value={freeViewFilter.dueBefore ?? ''}
-            onChange={(e) => updateFreeViewFilter({ dueBefore: e.target.value || undefined })}
-            className="px-1.5 py-0.5 rounded border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark text-xs"
-            title={t.filter.dueTo}
-          />
-        </div>
+        {/* Due date filter */}
+        <DateFilterDropdown
+          label={t.filter.due.replace(':', '')}
+          presetValue={dueDatePreset}
+          customFrom={dueDatePreset ? undefined : freeViewFilter.dueAfter}
+          customTo={dueDatePreset ? undefined : freeViewFilter.dueBefore}
+          onPresetChange={handleDueDatePreset}
+          onCustomRangeChange={handleDueDateCustomRange}
+          presetOptions={DUE_DATE_PRESETS}
+        />
+
+        {/* Follow-up date filter */}
+        <DateFilterDropdown
+          label={t.filter.followUpDate}
+          presetValue={followUpPreset}
+          customFrom={followUpPreset ? undefined : freeViewFilter.followUpAfter}
+          customTo={followUpPreset ? undefined : freeViewFilter.followUpBefore}
+          onPresetChange={handleFollowUpPreset}
+          onCustomRangeChange={handleFollowUpCustomRange}
+          presetOptions={FOLLOW_UP_PRESETS}
+        />
       </div>
 
       {/* Row 2: GroupBy + SortBy + Counter + Reset */}

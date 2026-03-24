@@ -13,6 +13,7 @@ export const IPC = {
   TOPICS_DELETE_NOTE:   'topics:delete-note',
   TOPICS_UPDATE_BODY:   'topics:update-body',
   TOPICS_DUPLICATE:     'topics:duplicate',
+  TOPICS_SEARCH_IDS:    'topics:search-ids',
 
   // Attachments
   ATTACHMENTS_SAVE:     'attachments:save',

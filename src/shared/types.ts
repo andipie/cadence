@@ -111,6 +111,15 @@ export interface TopicFilter {
   overdue?: boolean;
   dueBefore?: string;
   dueAfter?: string;
+  noDueDate?: boolean;
+  dueThisWeek?: boolean;
+  dueNextWeek?: boolean;
+  followUpOverdue?: boolean;
+  followUpBefore?: string;
+  followUpAfter?: string;
+  noFollowUpDate?: boolean;
+  followUpThisWeek?: boolean;
+  followUpNextWeek?: boolean;
   search?: string;
   inbox?: boolean;
   groupBy?: 'context' | 'priority' | 'direction' | 'status' | 'none';
@@ -140,6 +149,8 @@ export interface UpdateViewInput {
 
 // --- Settings ---
 
+export type ContextViewSortBy = 'manual' | 'priority' | 'due_date' | 'created_at' | 'updated_at' | 'title';
+
 export interface Settings {
   dataDir: string;
   globalHotkey: string;
@@ -153,6 +164,7 @@ export interface Settings {
   noteMode: NoteMode;
   sidebarWidth: number;
   detailPanelWidth: number;
+  contextViewSortBy: ContextViewSortBy;
 }
 
 // --- Switch Directory ---

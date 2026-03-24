@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Context, ContextGroup, Topic, TopicDetail, CreateContextInput, UpdateContextInput, UpdateTopicInput, TopicFilter, AppErrorSeverity, SavedView, UpdateViewInput, Settings, StartupState } from '@shared/types';
+import type { Context, ContextGroup, Topic, TopicDetail, CreateContextInput, UpdateContextInput, UpdateTopicInput, TopicFilter, AppErrorSeverity, SavedView, UpdateViewInput, Settings, StartupState, ContextViewSortBy } from '@shared/types';
 import { getTranslations } from '@shared/locales';
 import type { Translations } from '@shared/locales/types';
 
@@ -90,6 +90,17 @@ interface AppState {
   setFreeViewFilter: (filter: TopicFilter) => void;
   updateFreeViewFilter: (partial: Partial<TopicFilter>) => void;
   resetFreeViewFilter: () => void;
+
+  // Context View filter (client-side)
+  contextViewFilter: TopicFilter;
+  contextViewFilterOpen: boolean;
+  contextSearchMatchIds: string[] | null;
+  updateContextViewFilter: (partial: Partial<TopicFilter>) => void;
+  resetContextViewFilter: () => void;
+  toggleContextViewFilterOpen: () => void;
+
+  // Context View sort (persisted in Settings)
+  setContextViewSortBy: (sortBy: ContextViewSortBy) => void;
 
   // Liefern View filter
   deliverFilter: { contexts?: string[]; dueBefore?: string; includeNoDueDate: boolean };
@@ -228,6 +239,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Free View filter
   freeViewFilter: {},
 
+  // Context View filter (client-side, resets on context switch)
+  contextViewFilter: {},
+  contextViewFilterOpen: false,
+  contextSearchMatchIds: null,
+
   // Liefern View filter
   deliverFilter: { includeNoDueDate: true },
 
@@ -254,7 +270,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setActiveContext: (id) => {
-    set({ activeContextId: id, activeView: 'context', selectedTopicId: null });
+    set({ activeContextId: id, activeView: 'context', selectedTopicId: null, contextViewFilter: {}, contextSearchMatchIds: null });
     if (id) {
       get().loadTopics();
     } else {
@@ -418,6 +434,44 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (get().activeView === 'free-view') {
       get().loadTopics();
     }
+  },
+
+  // Context View filter actions (client-side — no loadTopics needed)
+  updateContextViewFilter: (partial) => {
+    const newFilter = { ...get().contextViewFilter, ...partial };
+    set({ contextViewFilter: newFilter });
+
+    // When search text changes, fire async FTS5 search for body matches
+    if ('search' in partial) {
+      const search = newFilter.search;
+      if (search && search.trim().length > 0) {
+        const searchTerm = search.trim();
+        window.api.topics.searchIds(searchTerm).then((ids) => {
+          // Guard against stale results: only apply if search still matches
+          if (get().contextViewFilter.search?.trim() === searchTerm) {
+            set({ contextSearchMatchIds: ids });
+          }
+        }).catch(() => {
+          // Non-critical — body search degraded, title search still works
+          set({ contextSearchMatchIds: null });
+        });
+      } else {
+        set({ contextSearchMatchIds: null });
+      }
+    }
+  },
+
+  resetContextViewFilter: () => {
+    set({ contextViewFilter: {}, contextSearchMatchIds: null });
+  },
+
+  toggleContextViewFilterOpen: () => {
+    set((state) => ({ contextViewFilterOpen: !state.contextViewFilterOpen }));
+  },
+
+  // Context View sort (persisted)
+  setContextViewSortBy: async (sortBy) => {
+    await get().updateSettings({ contextViewSortBy: sortBy }, { silent: true });
   },
 
   // Liefern View filter actions
@@ -907,6 +961,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeView: 'context',
       settingsOpen: false,
       freeViewFilter: {},
+      contextViewFilter: {},
+      contextSearchMatchIds: null,
+      contextViewFilterOpen: false,
     });
 
     // Reload data from new directory
@@ -953,6 +1010,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeView: 'context',
       settingsOpen: false,
       freeViewFilter: {},
+      contextViewFilter: {},
+      contextSearchMatchIds: null,
+      contextViewFilterOpen: false,
     });
 
     // Reload data from new directory
@@ -1005,6 +1065,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeView: 'context',
       settingsOpen: false,
       freeViewFilter: {},
+      contextViewFilter: {},
+      contextSearchMatchIds: null,
+      contextViewFilterOpen: false,
     });
 
     get().loadGroups();

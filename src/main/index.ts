@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, protocol, net } from 'electron';
+import { app, BrowserWindow, Menu, nativeTheme, protocol, net } from 'electron';
 import { join } from 'path';
 import path from 'path';
 import {
@@ -44,6 +44,7 @@ function createWindow(): BrowserWindow {
     height: DEFAULT_WINDOW_HEIGHT,
     minWidth: MIN_WINDOW_WIDTH,
     minHeight: MIN_WINDOW_HEIGHT,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -107,6 +108,18 @@ app.whenReady().then(() => {
       // Icon not found — skip silently
     }
   }
+
+  // Set up minimal menu: preserves clipboard shortcuts (Cmd/Ctrl+C/V/X/A)
+  // and window management, but removes unnecessary default menu items.
+  // On macOS the system menu bar is retained (with app name, Quit, Hide).
+  // On Windows/Linux autoHideMenuBar hides it (Alt to toggle).
+  const isMac = process.platform === 'darwin';
+  const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+    ...(isMac ? [{ role: 'appMenu' as const }] : []),
+    { role: 'editMenu' as const },
+    { role: 'windowMenu' as const },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
 
   const win = createWindow();
 

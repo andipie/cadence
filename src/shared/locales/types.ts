@@ -48,6 +48,10 @@ export interface Translations {
     completedExists: (count: number) => string;
     resultsCount: (count: number) => string;
     openCount: (count: number) => string;
+    filteredOpenCount: (filtered: number, total: number) => string;
+    noFilterMatch: string;
+    resetFilters: string;
+    filterTooltip: string;
     newTopicPlaceholder: string;
     newTopicInboxPlaceholder: string;
     newTopicQuick: string;
@@ -87,6 +91,8 @@ export interface Translations {
     sortByDueDate: string;
     sortByCreatedAt: string;
     sortByUpdatedAt: string;
+    sortByTitle: string;
+    sortByManual: string;
     // due proximity groups
     dueOverdue: string;
     dueToday: string;
@@ -102,6 +108,15 @@ export interface Translations {
     noDueDate: string;
     dueDateFilterTooltip: (label: string) => string;
     reset: string;
+    // follow-up date filter
+    followUpDate: string;
+    followUpOverdue: string;
+    followUpThisWeek: string;
+    followUpNextWeek: string;
+    noFollowUpDate: string;
+    // date filter dropdown
+    customRange: string;
+    clearFilter: string;
   };
 
   // --- Filter chips ---
@@ -113,6 +128,16 @@ export interface Translations {
     search: (query: string) => string;
     dueAfter: (date: string) => string;
     dueBefore: (date: string) => string;
+    dueOverdue: string;
+    dueThisWeek: string;
+    dueNextWeek: string;
+    noDueDate: string;
+    followUpOverdue: string;
+    followUpThisWeek: string;
+    followUpNextWeek: string;
+    noFollowUpDate: string;
+    followUpAfter: (date: string) => string;
+    followUpBefore: (date: string) => string;
     removeFilter: string;
   };
 
